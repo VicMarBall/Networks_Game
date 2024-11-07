@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Unity.VisualScripting;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 public enum PacketBodyType
 {
 	HELLO, // client requests to server entrance
 	PING, // 
-	OBJECT_STATE
+	OBJECT_STATE,
+	TESTING
 }
 
 public class Packet
@@ -29,12 +33,19 @@ public class Packet
 	int playerID;
 	PacketBody body;
 
-	byte[] Serialize() 
+	public byte[] Serialize() 
 	{
-		// TO IMPLEMENT
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
 
+		writer.Write((byte)type);
+		writer.Write(playerID);
+		writer.Write(body.Serialize());
 
-		return null;
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes;
 	}
 
 	void Deserialize(byte[] data) 
@@ -43,7 +54,9 @@ public class Packet
 
 		// deserialize second value // TO IMPLEMENT
 
-		switch (type)
+		PacketBodyType packetType = PacketBodyType.OBJECT_STATE;
+
+		switch (packetType)
 		{
 			case PacketBodyType.HELLO:
 				body = new HelloPacketBody();
@@ -54,6 +67,9 @@ public class Packet
 			case PacketBodyType.OBJECT_STATE:
 				body = new ObjectStatePacketBody();
 				break;
+			case PacketBodyType.TESTING:
+				body = new ObjectStatePacketBody();
+				break;
 			default:
 				break;
 		}
@@ -62,17 +78,20 @@ public class Packet
 
 public abstract class PacketBody
 {
+	public abstract byte[] Serialize();
 	public abstract void Deserialize(byte[] data);
 }
 
 
 public class HelloPacketBody : PacketBody
 {
+	public override byte[] Serialize() { return null; }
 	public override void Deserialize(byte[] data) { }
 }
 
 public class PingPacketBody : PacketBody
 {
+	public override byte[] Serialize() { return null; }
 	public override void Deserialize(byte[] data) { }
 }
 
@@ -93,8 +112,17 @@ public class ObjectStatePacketBody : PacketBody
 		ObjectReplicationClass objectClass;
 		byte[] data;
 	}
+	public override byte[] Serialize() { return null; }
+
 	public override void Deserialize(byte[] data) 
 	{ 
 		// TO IMPLEMENT
 	}
+}
+
+public class TestingPacketBody : PacketBody
+{
+	string testString = "Test Packet";
+	public override byte[] Serialize() { return null; }
+	public override void Deserialize(byte[] data) { }
 }
