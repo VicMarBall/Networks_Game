@@ -7,10 +7,9 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.tvOS;
 
-public class Host : MonoBehaviour
+public class Server : MonoBehaviour
 {
 	Socket socket;
-
 
 	public List<EndPoint> usersConnected = new List<EndPoint>();
 
