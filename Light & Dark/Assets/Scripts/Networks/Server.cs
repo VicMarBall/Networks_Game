@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.tvOS;
 
 public class Server : MonoBehaviour
 {
@@ -33,11 +32,13 @@ public class Server : MonoBehaviour
 		IPEndPoint IPEP = new IPEndPoint(IPAddress.Any, 9050);
 		socket.Bind(IPEP);
 
-		Thread newConnection = new Thread(ReceiveChatMessage);
+		Debug.Log("Server Started");
+
+		Thread newConnection = new Thread(ReceivePacket);
 		newConnection.Start();
 	}
 
-	void ReceiveChatMessage()
+	void ReceivePacket()
 	{
 		int recv;
 		byte[] data = new byte[1024];
@@ -47,17 +48,11 @@ public class Server : MonoBehaviour
 
 		while (true)
 		{
+			Debug.Log("Waiting Packet");
+
 			recv = socket.ReceiveFrom(data, ref remote);
 
-			Packet packet = new Packet(data);
-
-			if (!usersConnected.Contains(remote))
-			{
-				usersConnected.Add(remote);
-				//Thread sendThread = new Thread(() => SendPacket(remote, "Thanks for joining " + serverName + " server!\n"));
-				//sendThread.Start();
-			}
-
+			OnPacketRecieved(data, remote);
 		}
 
 	}
@@ -68,16 +63,23 @@ public class Server : MonoBehaviour
 		socket.SendTo(data, target);
 	}
 
-	void OnPacketRecieved(byte[] inputPacket, Socket fromAddress)
+	void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress)
     {
-        Packet packet = new Packet(inputPacket);
+		Debug.Log("Packet Received");
+
+		Packet packet = new Packet(inputPacket);
+
+		if (packet.GetPacketType() == PacketBodyType.TESTING)
+		{
+			Debug.Log("Testing Packet Received");
+		}
 
 		// host update stuff
 
 		// send the message to all users EXCEPT origin
 		foreach (EndPoint user in usersConnected)
 		{
-			if (user == fromAddress.LocalEndPoint) { continue; }
+			if (user == fromAddress) { continue; }
 			Thread sendThread = new Thread(() => SendPacket(packet, user));
 			sendThread.Start();
 		}

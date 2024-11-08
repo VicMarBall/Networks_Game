@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Unity.VisualScripting;
-using UnityEditor.VersionControl;
 using UnityEngine;
 
 public enum PacketBodyType
@@ -33,6 +32,9 @@ public class Packet
 	int playerID;
 	PacketBody body;
 
+	public PacketBodyType GetPacketType() {  return type; }
+	public PacketBody GetBody() { return body; }
+
 	public byte[] Serialize() 
 	{
 		MemoryStream stream = new MemoryStream();
@@ -50,13 +52,18 @@ public class Packet
 
 	void Deserialize(byte[] data) 
 	{
+		Stream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+
 		// deserialize first value // TO IMPLEMENT
+		type = (PacketBodyType)reader.ReadByte();
 
 		// deserialize second value // TO IMPLEMENT
 
-		PacketBodyType packetType = PacketBodyType.OBJECT_STATE;
 
-		switch (packetType)
+		switch (type)
 		{
 			case PacketBodyType.HELLO:
 				body = new HelloPacketBody();
@@ -123,6 +130,24 @@ public class ObjectStatePacketBody : PacketBody
 public class TestingPacketBody : PacketBody
 {
 	string testString = "Test Packet";
-	public override byte[] Serialize() { return null; }
-	public override void Deserialize(byte[] data) { }
+	public override byte[] Serialize() 
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write(testString);
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes; 
+	}
+	public override void Deserialize(byte[] data) 
+	{
+		Stream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+		
+		testString = reader.ReadString();
+	}
 }

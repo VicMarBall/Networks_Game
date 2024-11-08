@@ -26,14 +26,17 @@ public class NetworkingCreator : MonoBehaviour
 
         DontDestroyOnLoad(client);
 
+        client.GetComponent<Client>().StartClient();
+
         SceneManager.LoadScene("Playtesting");
     }
 
 	public void CreateServer()
 	{
 		GameObject server = Instantiate(serverPrefab);
-
 		DontDestroyOnLoad(server);
+
+		server.GetComponent<Server>().StartServer();
 
 		SceneManager.LoadScene("Playtesting");
 	}

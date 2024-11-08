@@ -33,18 +33,23 @@ public class Client : MonoBehaviour
 
 	public void StartClient()
 	{
+		string ipTarget = "127.0.0.1";
+
+		// create socket and set the target IPEP
+		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+		targetIPEP = new IPEndPoint(IPAddress.Parse(ipTarget), 9050);
+
+		Debug.Log("Client Created");
+
 		mainThread = new Thread(ConnectToServer);
 		mainThread.Start();
 	}
 
 	void ConnectToServer()
 	{
-		string ipTarget = "127.0.0.0";
-
-		// create socket and set the target IPEP
-		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-		targetIPEP = new IPEndPoint(IPAddress.Parse(ipTarget), 9050);
 		socket.Connect(targetIPEP);
+
+		Debug.Log("Client Connected to Server");
 
 		// send a first message to the server
 		TestingPacketBody body = new TestingPacketBody();
