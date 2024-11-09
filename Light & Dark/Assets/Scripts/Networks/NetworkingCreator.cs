@@ -8,18 +8,6 @@ public class NetworkingCreator : MonoBehaviour
     public GameObject clientPrefab;
     public GameObject serverPrefab;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void CreateClient()
     {
         GameObject client = Instantiate(clientPrefab);
