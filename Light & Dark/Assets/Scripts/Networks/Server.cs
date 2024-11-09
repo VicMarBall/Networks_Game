@@ -5,27 +5,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
-using static ObjectStatePacketBody;
 
 public class Server : MonoBehaviour
 {
 	Socket socket;
 
 	public List<EndPoint> usersConnected = new List<EndPoint>();
-
-	Dictionary<int, GameObject> networkObjects;
-
-	// Start is called before the first frame update
-	void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
 	public void StartServer()
 	{
@@ -83,9 +68,10 @@ public class Server : MonoBehaviour
 			case PacketBodyType.PING:
 				break;
 			case PacketBodyType.OBJECT_STATE:
-				UpdateNetworkObjects((ObjectStatePacketBody)packet.GetBody());
+				NetObjectsManager.instance.UpdateNetworkObjects((ObjectStatePacketBody)packet.GetBody());
 				break;
 			case PacketBodyType.TESTING:
+				NetObjectsManager.instance.TestManager();
 				break;
 		}
 
@@ -96,46 +82,5 @@ public class Server : MonoBehaviour
 			Thread sendThread = new Thread(() => SendPacket(packet, user));
 			sendThread.Start();
 		}
-	}
-
-
-	void UpdateNetworkObjects(ObjectStatePacketBody packetBody)
-	{
-		foreach (ObjectStatePacketBodySegment segment in packetBody.segments)
-		{
-			switch (segment.action)
-			{
-				case ObjectReplicationAction.CREATE:
-					CreateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
-					break;
-				case ObjectReplicationAction.UPDATE:
-					UpdateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
-					break;
-				case ObjectReplicationAction.DESTROY:
-					DestroyNetObject(segment.networkObjectID);
-					break;
-			}
-		}
-	}
-
-	// TO IMPLEMENT
-	void CreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
-	{
-		GameObject go = null;
-
-
-		networkObjects.Add(netID, go);
-	}
-
-	// TO IMPLEMENT
-	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
-	{
-
-	}
-
-	// TO IMPLEMENT
-	void DestroyNetObject(int netID)
-	{
-
 	}
 }
