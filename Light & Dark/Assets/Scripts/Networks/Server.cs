@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using static ObjectStatePacketBody;
 
 public class Server : MonoBehaviour
 {
@@ -75,6 +76,18 @@ public class Server : MonoBehaviour
 		}
 
 		// host update stuff
+		switch (packet.GetPacketType())
+		{
+			case PacketBodyType.HELLO:
+				break;
+			case PacketBodyType.PING:
+				break;
+			case PacketBodyType.OBJECT_STATE:
+				UpdateNetworkObjects((ObjectStatePacketBody)packet.GetBody());
+				break;
+			case PacketBodyType.TESTING:
+				break;
+		}
 
 		// send the message to all users EXCEPT origin
 		foreach (EndPoint user in usersConnected)
@@ -83,6 +96,46 @@ public class Server : MonoBehaviour
 			Thread sendThread = new Thread(() => SendPacket(packet, user));
 			sendThread.Start();
 		}
+	}
+
+
+	void UpdateNetworkObjects(ObjectStatePacketBody packetBody)
+	{
+		foreach (ObjectStatePacketBodySegment segment in packetBody.segments)
+		{
+			switch (segment.action)
+			{
+				case ObjectReplicationAction.CREATE:
+					CreateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
+					break;
+				case ObjectReplicationAction.UPDATE:
+					UpdateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
+					break;
+				case ObjectReplicationAction.DESTROY:
+					DestroyNetObject(segment.networkObjectID);
+					break;
+			}
+		}
+	}
+
+	// TO IMPLEMENT
+	void CreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	{
+		GameObject go = null;
+
+
+		networkObjects.Add(netID, go);
+	}
+
+	// TO IMPLEMENT
+	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	{
+
+	}
+
+	// TO IMPLEMENT
+	void DestroyNetObject(int netID)
+	{
 
 	}
 }

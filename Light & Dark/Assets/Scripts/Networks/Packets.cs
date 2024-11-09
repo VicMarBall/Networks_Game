@@ -57,7 +57,7 @@ public class Packet
 		stream.Seek(0, SeekOrigin.Begin);
 
 
-		// deserialize first value // TO IMPLEMENT
+		// deserialize first value
 		type = (PacketBodyType)reader.ReadByte();
 
 		// deserialize second value // TO IMPLEMENT
@@ -111,15 +111,19 @@ public enum ObjectReplicationAction
 
 public class ObjectStatePacketBody : PacketBody
 {
-	List<ObjectStatePacketBodySegment> segments;
+	public List<ObjectStatePacketBodySegment> segments;
 
-	struct ObjectStatePacketBodySegment {
-		ObjectReplicationAction action;
-		int networkObjectID;
-		ObjectReplicationClass objectClass;
-		byte[] data;
+	public struct ObjectStatePacketBodySegment {
+		public ObjectReplicationAction action;
+		public int networkObjectID;
+		public ObjectReplicationClass objectClass;
+		public byte[] data; // this data is serialized with functions in ObjectReplicationRegistry.cs
 	}
-	public override byte[] Serialize() { return null; }
+	public override byte[] Serialize() 
+	{
+		// TO IMPLEMENT
+		return null; 
+	}
 
 	public override void Deserialize(byte[] data) 
 	{ 

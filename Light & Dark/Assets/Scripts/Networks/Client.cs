@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
+using static ObjectStatePacketBody;
 
 public class Client : MonoBehaviour
 {
@@ -52,6 +53,7 @@ public class Client : MonoBehaviour
 		Debug.Log("Client Connected to Server");
 
 		// send a first message to the server
+		// TO DO change it to a hello packet
 		TestingPacketBody body = new TestingPacketBody();
 		Packet packet = new Packet(PacketBodyType.TESTING, playerID, body);
 
@@ -85,17 +87,58 @@ public class Client : MonoBehaviour
 	void OnPacketRecieved(byte[] inputPacket, int packetLength)
 	{
 		Packet packet = new Packet(inputPacket);
+
+		switch (packet.GetPacketType())
+		{
+			case PacketBodyType.HELLO:
+				break;
+			case PacketBodyType.PING:
+				break;
+			case PacketBodyType.OBJECT_STATE:
+				UpdateNetworkObjects((ObjectStatePacketBody)packet.GetBody());
+				break;
+			case PacketBodyType.TESTING:
+				break;
+		}
 	}
 
-
-	void DeserializeWelcomePacket(byte[] welcomePacket)
+    void UpdateNetworkObjects(ObjectStatePacketBody packetBody)
     {
-
+		foreach (ObjectStatePacketBodySegment segment in packetBody.segments)
+		{
+			switch (segment.action)
+			{
+				case ObjectReplicationAction.CREATE:
+					CreateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
+					break;
+				case ObjectReplicationAction.UPDATE:
+					UpdateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
+					break;
+				case ObjectReplicationAction.DESTROY:
+					DestroyNetObject(segment.networkObjectID);
+					break;
+			}
+		}
     }
 
-    // TO IMPLEMENT
-    void UpdateNetworkObject(int netID, byte[] data)
-    {
+	// TO IMPLEMENT
+	void CreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	{
+		GameObject go = null;
 
-    }
+
+		networkObjects.Add(netID, go);
+	}
+
+	// TO IMPLEMENT
+	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	{
+
+	}
+
+	// TO IMPLEMENT
+	void DestroyNetObject(int netID)
+	{
+
+	}
 }
