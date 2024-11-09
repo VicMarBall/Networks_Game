@@ -6,7 +6,8 @@ using UnityEngine;
 
 public enum ObjectReplicationClass
 {
-	TRANSFORM
+	TRANSFORM,
+	PLAYER
 }
 
 public static class ObjectReplicationRegistry

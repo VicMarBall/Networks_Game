@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.Rendering.HableCurve;
 
 public enum PacketBodyType
 {
 	HELLO, // client requests to server entrance
-	PING, // 
+	PING, 
 	OBJECT_STATE,
-	TESTING
+	TESTING,
+	HARCODED_PLAYER // TO DELETE
 }
 
 public class Packet
@@ -33,6 +35,7 @@ public class Packet
 	PacketBody body;
 
 	public PacketBodyType GetPacketType() {  return type; }
+	public int GetPlayerID() { return playerID; }
 	public PacketBody GetBody() { return body; }
 
 	public byte[] Serialize() 
@@ -243,5 +246,88 @@ public class TestingPacketBody : PacketBody
 		stream.Seek(0, SeekOrigin.Begin);
 		
 		testString = reader.ReadString();
+	}
+}
+
+public class PlayerPacketBody : PacketBody
+{
+	public ObjectReplicationAction action;
+	public Transform transform;
+
+	// send
+	public PlayerPacketBody(ObjectReplicationAction action, Transform transform) 
+	{
+		this.action = action;
+		this.transform = transform;
+	}
+
+	// recieve
+	public PlayerPacketBody(byte[] data)
+	{
+		Deserialize(data);
+	}
+
+	public override byte[] Serialize() 
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write((char)action);
+
+		Matrix4x4 transformMatrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
+
+		writer.Write(transformMatrix.m00);
+		writer.Write(transformMatrix.m01);
+		writer.Write(transformMatrix.m02);
+		writer.Write(transformMatrix.m03);
+		writer.Write(transformMatrix.m10);
+		writer.Write(transformMatrix.m11);
+		writer.Write(transformMatrix.m12);
+		writer.Write(transformMatrix.m13);
+		writer.Write(transformMatrix.m20);
+		writer.Write(transformMatrix.m21);
+		writer.Write(transformMatrix.m22);
+		writer.Write(transformMatrix.m23);
+		writer.Write(transformMatrix.m30);
+		writer.Write(transformMatrix.m31);
+		writer.Write(transformMatrix.m32);
+		writer.Write(transformMatrix.m33);
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes;
+	}
+
+	public override void Deserialize(byte[] data) 
+	{
+		Stream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		action = (ObjectReplicationAction)reader.ReadChar();
+
+		Matrix4x4 transformationMatrix;
+
+		transformationMatrix.m00 = reader.ReadSingle();
+		transformationMatrix.m01 = reader.ReadSingle();
+		transformationMatrix.m02 = reader.ReadSingle();
+		transformationMatrix.m03 = reader.ReadSingle();
+		transformationMatrix.m10 = reader.ReadSingle();
+		transformationMatrix.m11 = reader.ReadSingle();
+		transformationMatrix.m12 = reader.ReadSingle();
+		transformationMatrix.m13 = reader.ReadSingle();
+		transformationMatrix.m20 = reader.ReadSingle();
+		transformationMatrix.m21 = reader.ReadSingle();
+		transformationMatrix.m22 = reader.ReadSingle();
+		transformationMatrix.m23 = reader.ReadSingle();
+		transformationMatrix.m30 = reader.ReadSingle();
+		transformationMatrix.m31 = reader.ReadSingle();
+		transformationMatrix.m32 = reader.ReadSingle();
+		transformationMatrix.m33 = reader.ReadSingle();
+
+		transform.position = transformationMatrix.GetPosition();
+		transform.rotation = transformationMatrix.rotation;
+		transform.localScale = transformationMatrix.lossyScale;
 	}
 }
