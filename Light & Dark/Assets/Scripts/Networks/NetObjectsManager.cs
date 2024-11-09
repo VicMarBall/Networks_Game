@@ -35,13 +35,13 @@ public class NetObjectsManager : MonoBehaviour
 			switch (segment.action)
 			{
 				case ObjectReplicationAction.CREATE:
-					CreateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
+					CreateNetObject(segment.netID, segment.objectClass, segment.data);
 					break;
 				case ObjectReplicationAction.UPDATE:
-					UpdateNetObject(segment.networkObjectID, segment.objectClass, segment.data);
+					UpdateNetObject(segment.netID, segment.objectClass, segment.data);
 					break;
 				case ObjectReplicationAction.DESTROY:
-					DestroyNetObject(segment.networkObjectID);
+					DestroyNetObject(segment.netID);
 					break;
 			}
 		}
