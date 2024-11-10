@@ -13,6 +13,8 @@ public class NetObjectsManager : MonoBehaviour
 
 	Dictionary<int, GameObject> networkObjects;
 
+	List<ObjectStatePacketBodySegment> preparedPacketBodies;
+
 	private void Awake()
 	{
 		if (instance == null)
@@ -29,6 +31,12 @@ public class NetObjectsManager : MonoBehaviour
 	public void TestManager() 
 	{
 		Debug.Log("TestManager Reached");
+	}
+
+	// TO IMPLEMENT
+	public void PreparePacket(ObjectStatePacketBodySegment packetBody)
+	{
+
 	}
 
 	public void ReceivePlayerPacket(int netID, PlayerPacketBody packet)

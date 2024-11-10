@@ -6,6 +6,22 @@ using UnityEngine;
 
 abstract public class NetworkingEnd : MonoBehaviour
 {
+	// singleton
+	public static NetworkingEnd instance { get; private set; }
+
+	private void Awake()
+	{
+		if (instance == null)
+		{
+			instance = this;
+			DontDestroyOnLoad(gameObject);
+		}
+		else
+		{
+			Destroy(gameObject);
+		}
+	}
+
 	protected Socket socket;
 
 	protected void ReceivePacket()
