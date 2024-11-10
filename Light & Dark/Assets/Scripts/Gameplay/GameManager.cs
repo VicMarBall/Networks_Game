@@ -26,5 +26,8 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
+	public int playerID {  get; private set; }
+	public void SetPlayerID(int playerID) { this.playerID = playerID; }
+
 	public GameplayEnvironmentMode gameplayEnvironmentMode { get; private set; }
 }

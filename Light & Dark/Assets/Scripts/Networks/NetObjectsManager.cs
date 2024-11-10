@@ -9,11 +9,11 @@ public class NetObjectsManager : MonoBehaviour
 	public static NetObjectsManager instance { get; private set; }
 
 	[SerializeField]
-	GameObject player2Prefab;
+	GameObject playerPrefab;
 
 	Dictionary<int, GameObject> networkObjects;
 
-	List<ObjectStatePacketBodySegment> preparedPacketBodies;
+	List<ObjectStatePacketBodySegment> preparedPacketBodies = new List<ObjectStatePacketBodySegment>();
 
 	private void Awake()
 	{
@@ -68,43 +68,7 @@ public class NetObjectsManager : MonoBehaviour
 		NetworkingEnd.instance.PreparePacket(packet);
 	}
 
-	public void ReceivePlayerPacket(int netID, PlayerPacketBody packet)
-	{
-		switch (packet.action)
-		{
-			case ObjectReplicationAction.CREATE:
-				CreatePlayer(netID, packet);
-				break;
-			case ObjectReplicationAction.UPDATE:
-				UpdatePlayer(netID, packet);
-				break;
-			case ObjectReplicationAction.DESTROY:
-				Debug.Log("Destroy Player: " + netID);
-				break;
-			default:
-				Debug.Log("Action not found");
-				break;
-		}
-	}
-
-	void CreatePlayer(int netID, PlayerPacketBody packet)
-	{
-		GameObject player2 = Instantiate(player2Prefab);
-		networkObjects.Add(netID, player2);
-
-		networkObjects[netID].transform.position = packet.transform.position;
-		networkObjects[netID].transform.rotation = packet.transform.rotation;
-		networkObjects[netID].transform.localScale = packet.transform.localScale;
-	}
-
-	void UpdatePlayer(int netID, PlayerPacketBody packet)
-	{
-		networkObjects[netID].transform.position = packet.transform.position;
-		networkObjects[netID].transform.rotation = packet.transform.rotation;
-		networkObjects[netID].transform.localScale = packet.transform.localScale;
-	}
-
-	public void UpdateNetworkObjects(ObjectStatePacketBody packetBody)
+	public void ManageObjectStatePacket(ObjectStatePacketBody packetBody)
 	{
 		foreach (ObjectStatePacketBodySegment segment in packetBody.segments)
 		{
@@ -123,19 +87,51 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
+	public void CreatePlayer()
+	{
+		CreateNetObject(networkObjects.Count, ObjectReplicationClass.PLAYER, new byte[1]);
+
+		ObjectStatePacketBodySegment playerSegment = new ObjectStatePacketBodySegment(ObjectReplicationAction.CREATE, networkObjects.Count, ObjectReplicationClass.PLAYER, new byte[1]);
+		PreparePacket(playerSegment);
+	}
+
 	// TO IMPLEMENT
 	void CreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
 	{
 		GameObject go = null;
 
+		switch (classToReplicate)
+		{
+			case ObjectReplicationClass.PLAYER:
+				go = Instantiate(playerPrefab);
+				go.GetComponent<PlayerMovement>().getsInputs = true;
+			break;
+		}
 
-		networkObjects.Add(netID, go);
+		if (go != null)
+		{
+			networkObjects.Add(netID, go);
+		}
 	}
 
 	// TO IMPLEMENT
 	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
 	{
-
+		switch (classToReplicate)
+		{
+			case ObjectReplicationClass.POSITION:
+				Vector3 position = ObjectReplicationRegistry.DeserializeVector3(data);
+				networkObjects[netID].transform.position = position;
+				break;
+			case ObjectReplicationClass.ROTATION:
+				Quaternion rotation = ObjectReplicationRegistry.DeserializeQuaternion(data);
+				networkObjects[netID].transform.rotation = rotation;
+				break;
+			case ObjectReplicationClass.SCALE:
+				Vector3 scale = ObjectReplicationRegistry.DeserializeVector3(data);
+				networkObjects[netID].transform.localScale = scale;
+				break;
+		}
 	}
 
 	// TO IMPLEMENT

@@ -76,6 +76,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e83c1e09a9055f141ace96a12dc25a47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  getsInputs: 1
   movementSpeed: 7
   groundDrag: 5
   jumpForce: 8
@@ -99,7 +100,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06e9fdf2186a3014c9620e2d2fbaa237, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  typeOfClass: 1
+  netID: 0
+  playerIsOwner: 0
 --- !u!114 &1423963562158165003
 MonoBehaviour:
   m_ObjectHideFlags: 0

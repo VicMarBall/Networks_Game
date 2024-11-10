@@ -37,11 +37,14 @@ public class Server : NetworkingEnd
 		switch (packet.GetPacketType())
 		{
 			case PacketBodyType.HELLO:
+				WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
+				Packet welcomePacket = new Packet(PacketBodyType.WELCOME, GameManager.instance.playerID, body);
+				SendPacket(welcomePacket, fromAddress);
 				break;
 			case PacketBodyType.PING:
 				break;
 			case PacketBodyType.OBJECT_STATE:
-				NetObjectsManager.instance.UpdateNetworkObjects((ObjectStatePacketBody)packet.GetBody());
+				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.GetBody());
 				break;
 			case PacketBodyType.TESTING:
 				NetObjectsManager.instance.TestManager();

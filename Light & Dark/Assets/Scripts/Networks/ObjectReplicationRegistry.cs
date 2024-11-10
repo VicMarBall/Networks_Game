@@ -16,6 +16,7 @@ public enum ObjectReplicationClass
 
 public static class ObjectReplicationRegistry
 {
+	// Vector3
 	public static byte[] SerializeVector3(Vector3 vector3)
 	{
 		MemoryStream stream = new MemoryStream();
@@ -31,6 +32,23 @@ public static class ObjectReplicationRegistry
 		return objectAsBytes;
 
 	}
+	public static Vector3 DeserializeVector3(byte[] bytes)
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryReader reader = new BinaryReader(stream);
+
+		Vector3 vector3 = new Vector3();
+
+		vector3.x = reader.ReadSingle();
+		vector3.y = reader.ReadSingle();
+		vector3.z = reader.ReadSingle();
+
+		stream.Close();
+
+		return vector3;
+	}
+
+	// Quaternion
 	public static byte[] SerializeQuaternion(Quaternion quaternion)
 	{
 		MemoryStream stream = new MemoryStream();
@@ -47,6 +65,23 @@ public static class ObjectReplicationRegistry
 		return objectAsBytes;
 
 	}
+	public static Quaternion DeserializeQuaternion(byte[] bytes)
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryReader reader = new BinaryReader(stream);
+
+		Quaternion quaternion = new Quaternion();
+
+		quaternion.x = reader.ReadSingle();
+		quaternion.y = reader.ReadSingle();
+		quaternion.z = reader.ReadSingle();
+		quaternion.w = reader.ReadSingle();
+
+		stream.Close();
+
+		return quaternion;
+	}
+
 	public static Transform DeserializeTransform()
 	{
 		Transform ret = null;

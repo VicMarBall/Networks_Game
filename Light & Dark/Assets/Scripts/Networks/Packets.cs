@@ -8,6 +8,7 @@ using static UnityEngine.Rendering.HableCurve;
 public enum PacketBodyType
 {
 	HELLO, // client requests to server entrance
+	WELCOME,
 	PING, 
 	OBJECT_STATE,
 	TESTING,
@@ -70,6 +71,9 @@ public class Packet
 			case PacketBodyType.HELLO:
 				body = new HelloPacketBody(reader.ReadBytes(bodyLength));
 				break;
+			case PacketBodyType.WELCOME:
+				body = new WelcomePacketBody(reader.ReadBytes(bodyLength));
+				break;
 			case PacketBodyType.PING:
 				body = new PingPacketBody(reader.ReadBytes(bodyLength));
 				break;
@@ -103,9 +107,50 @@ public class HelloPacketBody : PacketBody
 		Deserialize(data);
 	}
 
-	public override byte[] Serialize() { return null; }
+	public override byte[] Serialize() { return new byte[1]; }
 	public override void Deserialize(byte[] data) { }
 }
+
+public class WelcomePacketBody : PacketBody
+{
+	// send
+	public WelcomePacketBody(int newPlayerID)
+	{
+		this.newPlayerID = newPlayerID;
+	}
+
+	// recieve
+	public WelcomePacketBody(byte[] data)
+	{
+		Deserialize(data);
+	}
+
+	public int newPlayerID { get; private set; }
+
+	public override byte[] Serialize()
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write(newPlayerID);
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes;
+	}
+	public override void Deserialize(byte[] data)
+	{
+		Stream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		newPlayerID = reader.ReadInt32();
+
+		reader.Close();
+	}
+}
+
 
 public class PingPacketBody : PacketBody
 {
@@ -130,7 +175,6 @@ public enum ObjectReplicationAction
 }
 
 
-// NOT USE YET
 public struct ObjectStatePacketBodySegment
 {
 	public ObjectStatePacketBodySegment(ObjectReplicationAction action, int netID, ObjectReplicationClass objectClass, byte[] data)
@@ -166,10 +210,9 @@ public struct ObjectStatePacketBodySegment
 	}
 }
 
-// NO USE YET
 public class ObjectStatePacketBody : PacketBody
 {
-	public List<ObjectStatePacketBodySegment> segments;
+	public List<ObjectStatePacketBodySegment> segments = new List<ObjectStatePacketBodySegment>();
 
 	// send
 	public ObjectStatePacketBody() { }

@@ -42,7 +42,7 @@ public class Host : NetworkingEnd
 			case PacketBodyType.PING:
 				break;
 			case PacketBodyType.OBJECT_STATE:
-				NetObjectsManager.instance.UpdateNetworkObjects((ObjectStatePacketBody)packet.GetBody());
+				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.GetBody());
 				break;
 			case PacketBodyType.TESTING:
 				NetObjectsManager.instance.TestManager();

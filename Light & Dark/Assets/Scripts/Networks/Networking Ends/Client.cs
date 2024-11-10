@@ -34,9 +34,8 @@ public class Client : NetworkingEnd
 		Debug.Log("Client Connected to Server");
 
 		// send a first message to the server
-		// TO DO change it to a hello packet
-		TestingPacketBody body = new TestingPacketBody();
-		Packet packet = new Packet(PacketBodyType.TESTING, playerID, body);
+		HelloPacketBody body = new HelloPacketBody();
+		Packet packet = new Packet(PacketBodyType.HELLO, playerID, body);
 
 		SendPacket(packet, targetIPEP);
 
@@ -53,10 +52,14 @@ public class Client : NetworkingEnd
 		{
 			case PacketBodyType.HELLO:
 				break;
+			case PacketBodyType.WELCOME:
+				WelcomePacketBody welcome = (WelcomePacketBody)packet.GetBody();
+				GameManager.instance.SetPlayerID(welcome.newPlayerID);
+				break;
 			case PacketBodyType.PING:
 				break;
 			case PacketBodyType.OBJECT_STATE:
-				NetObjectsManager.instance.UpdateNetworkObjects((ObjectStatePacketBody)packet.GetBody());
+				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.GetBody());
 				break;
 			case PacketBodyType.TESTING:
 				NetObjectsManager.instance.TestManager();
