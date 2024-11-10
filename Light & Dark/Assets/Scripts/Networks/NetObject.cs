@@ -6,8 +6,7 @@ public class NetObject : MonoBehaviour
 {
 	int netID;
 
-	[SerializeField]
-	ObjectReplicationClass typeOfClass;
+	[SerializeField] ObjectReplicationClass typeOfClass;
 	// Start is called before the first frame update
 	void Start()
 	{
