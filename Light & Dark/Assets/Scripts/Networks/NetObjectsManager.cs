@@ -28,15 +28,44 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
+	private void LateUpdate()
+	{
+		if (preparedPacketBodies.Count > 0)
+		{
+
+		}
+	}
+
 	public void TestManager() 
 	{
 		Debug.Log("TestManager Reached");
 	}
 
-	// TO IMPLEMENT
 	public void PreparePacket(ObjectStatePacketBodySegment packetBody)
 	{
+		preparedPacketBodies.Add(packetBody);
+	}
 
+	void SendObjectStatePacket()
+	{
+		int MTU = 1000;
+
+		ObjectStatePacketBody packetBody = new ObjectStatePacketBody();
+		
+		int packetSize = 0;
+		while (preparedPacketBodies.Count > 0)
+		{
+			packetSize += preparedPacketBodies[preparedPacketBodies.Count - 1].data.Length + 96;
+			if (packetSize > MTU) {	break; }
+
+			packetBody.AddSegment(preparedPacketBodies[preparedPacketBodies.Count - 1]);
+			preparedPacketBodies.RemoveAt(preparedPacketBodies.Count - 1);
+		}
+
+		// TO CHANGE playerID
+		Packet packet = new Packet(PacketBodyType.OBJECT_STATE, 0, packetBody);
+
+		NetworkingEnd.instance.PreparePacket(packet);
 	}
 
 	public void ReceivePlayerPacket(int netID, PlayerPacketBody packet)

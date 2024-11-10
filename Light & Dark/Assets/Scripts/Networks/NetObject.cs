@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class NetObject : MonoBehaviour
 {
-	int netID;
+	public int netID;
+
+	public bool playerIsOwner;
 
 	[SerializeField] ObjectReplicationClass typeOfClass;
 	// Start is called before the first frame update

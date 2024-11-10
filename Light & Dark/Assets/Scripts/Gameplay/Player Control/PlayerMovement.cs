@@ -5,6 +5,8 @@ using UnityEngine;
 // based on Dave / GameDevelopment First Person Movement Tutorial
 public class PlayerMovement : MonoBehaviour
 {
+	public bool getsInputs;
+
 	[Header("Movement")]
 	public float movementSpeed;
 
@@ -50,7 +52,7 @@ public class PlayerMovement : MonoBehaviour
 		// grounded check
 		grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
-		GetInputs();
+        if (getsInputs) { GetInputs(); }
 		LimitSpeed();
 
 		// handle drag

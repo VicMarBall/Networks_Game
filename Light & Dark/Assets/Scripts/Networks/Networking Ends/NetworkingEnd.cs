@@ -24,6 +24,8 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	protected Socket socket;
 
+	List<Packet> preparedPackets = new List<Packet>();
+
 	protected void ReceivePacket()
 	{
 		int recv;
@@ -40,6 +42,11 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 			OnPacketRecieved(data, remote);
 		}
+	}
+
+	public void PreparePacket(Packet packet) 
+	{
+		preparedPackets.Add(packet);
 	}
 
 	abstract protected void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress);
