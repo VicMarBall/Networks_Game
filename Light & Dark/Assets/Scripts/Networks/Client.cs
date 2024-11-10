@@ -7,15 +7,11 @@ using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Client : MonoBehaviour
+public class Client : NetworkingEnd
 {
 	int playerID = 0;
 
-	Socket socket;
 	IPEndPoint targetIPEP;
-
-	Thread mainThread;
-	Thread receiveThread;
 
 	public void StartClient()
 	{
@@ -27,7 +23,7 @@ public class Client : MonoBehaviour
 
 		Debug.Log("Client Created");
 
-		mainThread = new Thread(ConnectToServer);
+		Thread mainThread = new Thread(ConnectToServer);
 		mainThread.Start();
 	}
 
@@ -45,31 +41,11 @@ public class Client : MonoBehaviour
 		SendPacket(packet, targetIPEP);
 
 		// start recieving messages
-		receiveThread = new Thread(ReceiveMessages);
+		Thread receiveThread = new Thread(ReceivePacket);
 		receiveThread.Start();
 	}
 
-	void ReceiveMessages()
-	{
-		IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-		EndPoint remote = (EndPoint)(sender);
-
-		byte[] data = new byte[1024];
-
-		while (true)
-		{
-			int recv = socket.ReceiveFrom(data, ref remote);
-			OnPacketRecieved(data, recv);
-		}
-	}
-
-	void SendPacket(Packet packet, IPEndPoint target)
-	{
-		byte[] data = packet.Serialize();
-		socket.SendTo(data, target);
-	}
-
-	void OnPacketRecieved(byte[] inputPacket, int packetLength)
+	protected override void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress)
 	{
 		Packet packet = new Packet(inputPacket);
 
