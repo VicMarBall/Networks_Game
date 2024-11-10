@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-enum GameplayEnvironmentMode
+public enum GameplayEnvironmentMode
 {
 	LIGHT,
 	DARK
@@ -26,5 +26,5 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	GameplayEnvironmentMode gameplayEnvironmentMode;
+	public GameplayEnvironmentMode gameplayEnvironmentMode { get; private set; }
 }
