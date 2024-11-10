@@ -32,7 +32,7 @@ public class NetObjectsManager : MonoBehaviour
 	{
 		if (preparedPacketBodies.Count > 0)
 		{
-
+			SendObjectStatePacket();
 		}
 	}
 
