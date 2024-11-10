@@ -35,7 +35,7 @@ public class Client : NetworkingEnd
 
 		// send a first message to the server
 		HelloPacketBody body = new HelloPacketBody();
-		Packet packet = new Packet(PacketBodyType.HELLO, playerID, body);
+		Packet packet = new Packet(PacketType.HELLO, playerID, body);
 
 		SendPacket(packet, targetIPEP);
 
@@ -48,21 +48,18 @@ public class Client : NetworkingEnd
 	{
 		Packet packet = new Packet(inputPacket);
 
-		switch (packet.GetPacketType())
+		switch (packet.type)
 		{
-			case PacketBodyType.HELLO:
+			case PacketType.HELLO:
 				break;
-			case PacketBodyType.WELCOME:
-				WelcomePacketBody welcome = (WelcomePacketBody)packet.GetBody();
+			case PacketType.WELCOME:
+				WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
 				GameManager.instance.SetPlayerID(welcome.newPlayerID);
 				break;
-			case PacketBodyType.PING:
+			case PacketType.PING:
 				break;
-			case PacketBodyType.OBJECT_STATE:
-				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.GetBody());
-				break;
-			case PacketBodyType.TESTING:
-				NetObjectsManager.instance.TestManager();
+			case PacketType.OBJECT_STATE:
+				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 				break;
 		}
 	}

@@ -28,26 +28,18 @@ public class Server : NetworkingEnd
 
 		Packet packet = new Packet(inputPacket);
 
-		if (packet.GetPacketType() == PacketBodyType.TESTING)
-		{
-			Debug.Log("Testing Packet Received");
-		}
-
 		// host update stuff
-		switch (packet.GetPacketType())
+		switch (packet.type)
 		{
-			case PacketBodyType.HELLO:
+			case PacketType.HELLO:
 				WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
-				Packet welcomePacket = new Packet(PacketBodyType.WELCOME, GameManager.instance.playerID, body);
+				Packet welcomePacket = new Packet(PacketType.WELCOME, GameManager.instance.playerID, body);
 				SendPacket(welcomePacket, fromAddress);
 				break;
-			case PacketBodyType.PING:
+			case PacketType.PING:
 				break;
-			case PacketBodyType.OBJECT_STATE:
-				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.GetBody());
-				break;
-			case PacketBodyType.TESTING:
-				NetObjectsManager.instance.TestManager();
+			case PacketType.OBJECT_STATE:
+				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 				break;
 		}
 

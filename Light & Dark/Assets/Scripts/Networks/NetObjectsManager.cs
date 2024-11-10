@@ -55,7 +55,7 @@ public class NetObjectsManager : MonoBehaviour
 		int packetSize = 0;
 		while (preparedPacketBodies.Count > 0)
 		{
-			packetSize += preparedPacketBodies[preparedPacketBodies.Count - 1].data.Length + 96;
+			packetSize += preparedPacketBodies[preparedPacketBodies.Count - 1].objectData.Length + 96;
 			if (packetSize > MTU) {	break; }
 
 			packetBody.AddSegment(preparedPacketBodies[preparedPacketBodies.Count - 1]);
@@ -63,7 +63,7 @@ public class NetObjectsManager : MonoBehaviour
 		}
 
 		// TO CHANGE playerID
-		Packet packet = new Packet(PacketBodyType.OBJECT_STATE, 0, packetBody);
+		Packet packet = new Packet(PacketType.OBJECT_STATE, 0, packetBody);
 
 		NetworkingEnd.instance.PreparePacket(packet);
 	}
@@ -75,10 +75,10 @@ public class NetObjectsManager : MonoBehaviour
 			switch (segment.action)
 			{
 				case ObjectReplicationAction.CREATE:
-					CreateNetObject(segment.netID, segment.objectClass, segment.data);
+					CreateNetObject(segment.netID, segment.objectClass, segment.objectData);
 					break;
 				case ObjectReplicationAction.UPDATE:
-					UpdateNetObject(segment.netID, segment.objectClass, segment.data);
+					UpdateNetObject(segment.netID, segment.objectClass, segment.objectData);
 					break;
 				case ObjectReplicationAction.DESTROY:
 					DestroyNetObject(segment.netID);
