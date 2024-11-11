@@ -13,6 +13,17 @@ public class Client : NetworkingEnd
 
 	IPEndPoint targetIPEP;
 
+	private void LateUpdate()
+	{
+		while (preparedPackets.Count > 0)
+		{
+			Packet packet = preparedPackets.Dequeue();
+
+			SendPacket(packet, targetIPEP);
+		}
+	}
+
+
 	public void StartClient()
 	{
 		string ipTarget = "127.0.0.1";

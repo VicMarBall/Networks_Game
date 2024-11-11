@@ -10,6 +10,19 @@ public class Server : NetworkingEnd
 {
 	public List<EndPoint> usersConnected = new List<EndPoint>();
 
+	private void LateUpdate()
+	{
+		while (preparedPackets.Count > 0)
+		{
+			Packet packet = preparedPackets.Dequeue();
+
+			foreach (EndPoint user in usersConnected)
+			{
+				SendPacket(packet, user);
+			}
+		}
+	}
+
 	public void StartServer()
 	{
 		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -37,6 +50,13 @@ public class Server : NetworkingEnd
 				WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
 				Packet welcomePacket = new Packet(PacketType.WELCOME, GameManager.instance.playerID, body);
 				SendPacket(welcomePacket, fromAddress);
+
+				NetObjectsManager.instance.CreateForeignPlayer();
+
+				ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
+				playerBodyPacket.AddSegment(ObjectReplicationAction.CREATE, usersConnected.Count, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
+				Packet playerPacket = new Packet(PacketType.OBJECT_STATE, 0, playerBodyPacket);
+				SendPacket(playerPacket, fromAddress);
 				break;
 			case PacketType.WELCOME:
 				Debug.Log("Server Recieved WELCOME");

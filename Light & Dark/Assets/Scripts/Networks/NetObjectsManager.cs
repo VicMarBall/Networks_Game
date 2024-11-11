@@ -13,7 +13,7 @@ public class NetObjectsManager : MonoBehaviour
 
 	Dictionary<int, GameObject> networkObjects = new Dictionary<int, GameObject>();
 
-	List<ObjectStatePacketBodySegment> preparedPacketBodies = new List<ObjectStatePacketBodySegment>();
+	Queue<ObjectStatePacketBodySegment> preparedPacketBodies = new Queue<ObjectStatePacketBodySegment>();
 
 	Queue<int> netIDPendingToCreate = new Queue<int>();
 	Queue<GameObject> objectsPendingToCreate = new Queue<GameObject>();
@@ -50,7 +50,7 @@ public class NetObjectsManager : MonoBehaviour
 
 	public void PreparePacket(ObjectStatePacketBodySegment packetBody)
 	{
-		preparedPacketBodies.Add(packetBody);
+		preparedPacketBodies.Enqueue(packetBody);
 	}
 
 	void SendObjectStatePacket()
@@ -62,11 +62,15 @@ public class NetObjectsManager : MonoBehaviour
 		int packetSize = 0;
 		while (preparedPacketBodies.Count > 0)
 		{
-			packetSize += preparedPacketBodies[preparedPacketBodies.Count - 1].objectData.Length + 96;
-			if (packetSize > MTU) {	break; }
+			ObjectStatePacketBodySegment segmentToAdd = preparedPacketBodies.Dequeue();
+			packetSize += segmentToAdd.objectData.Length + 96;
+			if (packetSize > MTU) 
+			{	
+				preparedPacketBodies.Enqueue(segmentToAdd);
+				break;
+			}
 
-			packetBody.AddSegment(preparedPacketBodies[preparedPacketBodies.Count - 1]);
-			preparedPacketBodies.RemoveAt(preparedPacketBodies.Count - 1);
+			packetBody.AddSegment(segmentToAdd);
 		}
 
 		// TO CHANGE playerID
@@ -104,7 +108,7 @@ public class NetObjectsManager : MonoBehaviour
 
 	public void CreateForeignPlayer()
 	{
-		CreateNetObject(networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
+		CreateNetObject(networkObjects.Count, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
 	}
 
 	// TO IMPLEMENT

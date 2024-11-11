@@ -24,7 +24,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	protected Socket socket;
 
-	List<Packet> preparedPackets = new List<Packet>();
+	protected Queue<Packet> preparedPackets = new Queue<Packet>();
 
 	protected void ReceivePacket()
 	{
@@ -46,7 +46,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	public void PreparePacket(Packet packet) 
 	{
-		preparedPackets.Add(packet);
+		preparedPackets.Enqueue(packet);
 	}
 
 	abstract protected void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress);
