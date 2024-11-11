@@ -68,7 +68,7 @@ public class Client : NetworkingEnd
 				Debug.Log("Client Recieved WELCOME");
 				WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
 				//NetObjectsManager.instance.CreatePlayer();
-				GameManager.instance.SetPlayerID(welcome.newPlayerID);
+				SetUserID(welcome.newPlayerID);
 				break;
 			case PacketType.PING:
 				Debug.Log("Client Recieved PING");

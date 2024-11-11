@@ -36,7 +36,9 @@ public class NetObjectsManager : MonoBehaviour
 		while (objectsPendingToCreate.Count > 0)
 		{
 			GameObject go = Instantiate(objectsPendingToCreate.Dequeue());
-			networkObjects.Add(netIDPendingToCreate.Dequeue(), go);
+			int netID = netIDPendingToCreate.Dequeue();
+			networkObjects.Add(netID, go);
+			go.GetComponent<NetObject>().netID = netID;
 		}
 	}
 
@@ -48,7 +50,7 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
-	public void PreparePacket(ObjectStatePacketBodySegment packetBody)
+	public void PrepareBodySegment(ObjectStatePacketBodySegment packetBody)
 	{
 		preparedPacketBodies.Enqueue(packetBody);
 	}
@@ -103,12 +105,12 @@ public class NetObjectsManager : MonoBehaviour
 		CreateNetObject(networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
 
 		ObjectStatePacketBodySegment playerSegment = new ObjectStatePacketBodySegment(ObjectReplicationAction.CREATE, networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
-		PreparePacket(playerSegment);
+		PrepareBodySegment(playerSegment);
 	}
 
 	public void CreateForeignPlayer()
 	{
-		CreateNetObject(networkObjects.Count, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
+		CreateNetObject(NetworkingEnd.instance.userID, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
 	}
 
 	// TO IMPLEMENT

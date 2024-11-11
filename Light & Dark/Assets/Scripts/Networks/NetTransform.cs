@@ -2,17 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(NetObject))]
 public class NetTransform : NetComponent
 {
     Vector3 previousPosition;
     Quaternion previousRotation;
     Vector3 previousLocalScale;
-
-	private void Awake()
-	{
-		netObject = GetComponent<NetObject>();
-	}
 
 	// Start is called before the first frame update
 	void Start()
@@ -29,7 +23,7 @@ public class NetTransform : NetComponent
         {
             byte[] bytes = ObjectReplicationRegistry.SerializeVector3(transform.position);
             ObjectStatePacketBodySegment segment = new ObjectStatePacketBodySegment(ObjectReplicationAction.UPDATE, netObject.netID, ObjectReplicationClass.POSITION, bytes);
-            NetObjectsManager.instance.PreparePacket(segment);
+            NetObjectsManager.instance.PrepareBodySegment(segment);
 
 			previousPosition = transform.position;
 		}
@@ -37,7 +31,7 @@ public class NetTransform : NetComponent
         {
 			byte[] bytes = ObjectReplicationRegistry.SerializeQuaternion(transform.rotation);
 			ObjectStatePacketBodySegment segment = new ObjectStatePacketBodySegment(ObjectReplicationAction.UPDATE, netObject.netID, ObjectReplicationClass.ROTATION, bytes);
-			NetObjectsManager.instance.PreparePacket(segment);
+			NetObjectsManager.instance.PrepareBodySegment(segment);
 
 			previousRotation = transform.rotation;
 		}
@@ -45,7 +39,7 @@ public class NetTransform : NetComponent
         {
 			byte[] bytes = ObjectReplicationRegistry.SerializeVector3(transform.localScale);
 			ObjectStatePacketBodySegment segment = new ObjectStatePacketBodySegment(ObjectReplicationAction.UPDATE, netObject.netID, ObjectReplicationClass.SCALE, bytes);
-			NetObjectsManager.instance.PreparePacket(segment);
+			NetObjectsManager.instance.PrepareBodySegment(segment);
 
 			previousLocalScale = transform.localScale;
 		}

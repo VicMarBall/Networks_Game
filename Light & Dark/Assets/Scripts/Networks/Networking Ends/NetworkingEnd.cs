@@ -6,6 +6,7 @@ using UnityEngine;
 
 abstract public class NetworkingEnd : MonoBehaviour
 {
+	public int userID {  get; private set; }
 	// singleton
 	public static NetworkingEnd instance { get; private set; }
 
@@ -25,6 +26,11 @@ abstract public class NetworkingEnd : MonoBehaviour
 	protected Socket socket;
 
 	protected Queue<Packet> preparedPackets = new Queue<Packet>();
+
+	protected void SetUserID(int userID)
+	{
+		this.userID = userID;
+	}
 
 	protected void ReceivePacket()
 	{
