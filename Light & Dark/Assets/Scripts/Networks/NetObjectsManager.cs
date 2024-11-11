@@ -8,12 +8,15 @@ public class NetObjectsManager : MonoBehaviour
 	// singleton
 	public static NetObjectsManager instance { get; private set; }
 
-	[SerializeField]
-	GameObject playerPrefab;
+	[SerializeField] GameObject localPlayerPrefab;
+	[SerializeField] GameObject foreignPlayerPrefab;
 
-	Dictionary<int, GameObject> networkObjects;
+	Dictionary<int, GameObject> networkObjects = new Dictionary<int, GameObject>();
 
 	List<ObjectStatePacketBodySegment> preparedPacketBodies = new List<ObjectStatePacketBodySegment>();
+
+	Queue<int> netIDPendingToCreate = new Queue<int>();
+	Queue<GameObject> objectsPendingToCreate = new Queue<GameObject>();
 
 	private void Awake()
 	{
@@ -28,17 +31,21 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
+	private void Update()
+	{
+		while (objectsPendingToCreate.Count > 0)
+		{
+			GameObject go = Instantiate(objectsPendingToCreate.Dequeue());
+			networkObjects.Add(netIDPendingToCreate.Dequeue(), go);
+		}
+	}
+
 	private void LateUpdate()
 	{
 		if (preparedPacketBodies.Count > 0)
 		{
 			SendObjectStatePacket();
 		}
-	}
-
-	public void TestManager() 
-	{
-		Debug.Log("TestManager Reached");
 	}
 
 	public void PreparePacket(ObjectStatePacketBodySegment packetBody)
@@ -87,12 +94,17 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
-	public void CreatePlayer()
+	public void CreateLocalPlayer()
 	{
-		CreateNetObject(networkObjects.Count, ObjectReplicationClass.PLAYER, new byte[1]);
+		CreateNetObject(networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
 
-		ObjectStatePacketBodySegment playerSegment = new ObjectStatePacketBodySegment(ObjectReplicationAction.CREATE, networkObjects.Count, ObjectReplicationClass.PLAYER, new byte[1]);
+		ObjectStatePacketBodySegment playerSegment = new ObjectStatePacketBodySegment(ObjectReplicationAction.CREATE, networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
 		PreparePacket(playerSegment);
+	}
+
+	public void CreateForeignPlayer()
+	{
+		CreateNetObject(networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
 	}
 
 	// TO IMPLEMENT
@@ -102,10 +114,14 @@ public class NetObjectsManager : MonoBehaviour
 
 		switch (classToReplicate)
 		{
-			case ObjectReplicationClass.PLAYER:
-				go = Instantiate(playerPrefab);
-				go.GetComponent<PlayerMovement>().getsInputs = true;
-			break;
+			case ObjectReplicationClass.LOCAL_PLAYER:
+				netIDPendingToCreate.Enqueue(netID);
+				objectsPendingToCreate.Enqueue(localPlayerPrefab);
+				break;
+			case ObjectReplicationClass.FOREIGN_PLAYER:
+				netIDPendingToCreate.Enqueue(netID);
+				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
+				break;
 		}
 
 		if (go != null)

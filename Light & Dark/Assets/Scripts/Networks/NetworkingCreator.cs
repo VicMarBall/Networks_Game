@@ -11,7 +11,6 @@ public class NetworkingCreator : MonoBehaviour
     public void CreateClient()
     {
         GameObject client = Instantiate(clientPrefab);
-
         DontDestroyOnLoad(client);
 
         client.GetComponent<Client>().StartClient();

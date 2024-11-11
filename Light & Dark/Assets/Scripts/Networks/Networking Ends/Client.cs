@@ -51,14 +51,19 @@ public class Client : NetworkingEnd
 		switch (packet.type)
 		{
 			case PacketType.HELLO:
+				Debug.Log("Client Recieved HELLO");
 				break;
 			case PacketType.WELCOME:
+				Debug.Log("Client Recieved WELCOME");
 				WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
+				//NetObjectsManager.instance.CreatePlayer();
 				GameManager.instance.SetPlayerID(welcome.newPlayerID);
 				break;
 			case PacketType.PING:
+				Debug.Log("Client Recieved PING");
 				break;
 			case PacketType.OBJECT_STATE:
+				Debug.Log("Client Recieved OBJECT_STATE");
 				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 				break;
 		}

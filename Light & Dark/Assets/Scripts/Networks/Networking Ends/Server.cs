@@ -32,13 +32,20 @@ public class Server : NetworkingEnd
 		switch (packet.type)
 		{
 			case PacketType.HELLO:
+				//NetObjectsManager.instance.CreatePlayer();
+				Debug.Log("Server Recieved HELLO");
 				WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
 				Packet welcomePacket = new Packet(PacketType.WELCOME, GameManager.instance.playerID, body);
 				SendPacket(welcomePacket, fromAddress);
 				break;
+			case PacketType.WELCOME:
+				Debug.Log("Server Recieved WELCOME");
+				break;
 			case PacketType.PING:
+				Debug.Log("Server Recieved PING");
 				break;
 			case PacketType.OBJECT_STATE:
+				Debug.Log("Server Recieved OBJECT_STATE");
 				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 				break;
 		}

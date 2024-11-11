@@ -53,8 +53,8 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	protected void SendPacket(Packet packet, EndPoint target)
 	{
+		Debug.Log(packet.type + " Packet Sent");
 		byte[] data = packet.Serialize();
 		socket.SendTo(data, target);
 	}
-
 }

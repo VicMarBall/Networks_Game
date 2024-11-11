@@ -11,7 +11,8 @@ public enum ObjectReplicationClass
 	ROTATION,
 	SCALE,
 	TRANSFORM,
-	PLAYER
+	LOCAL_PLAYER,
+	FOREIGN_PLAYER
 }
 
 public static class ObjectReplicationRegistry
