@@ -81,7 +81,7 @@ public class Client : NetworkingEnd
 	public override void StartLevel(Vector3 startPoint)
 	{
 		ObjectStatePacketBody body = new ObjectStatePacketBody();
-		body.AddSegment(ObjectReplicationAction.CREATE, 0, ObjectReplicationClass.FOREIGN_PLAYER, ObjectReplicationRegistry.SerializeVector3(startPoint));
+		body.AddSegment(ObjectReplicationAction.CREATE, userID, ObjectReplicationClass.FOREIGN_PLAYER, ObjectReplicationRegistry.SerializeVector3(startPoint));
 		PreparePacket(new Packet(PacketType.OBJECT_STATE, userID, body));
 	}
 }

@@ -45,6 +45,10 @@ public class NetObjectsManager : MonoBehaviour
 		while (objectsPendingToCreate.Count > 0)
 		{
 			GameObject go = Instantiate(objectsPendingToCreate.Dequeue());
+			if (go.GetComponent<NetObject>() == null)
+			{
+				go = go.GetComponentInChildren<NetObject>().gameObject;
+			}
 			int netID = netIDPendingToCreate.Dequeue();
 			if (!networkObjects.ContainsKey(netID))
 			{

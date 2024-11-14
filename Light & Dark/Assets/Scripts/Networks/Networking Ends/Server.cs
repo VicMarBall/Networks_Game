@@ -63,8 +63,8 @@ public class Server : NetworkingEnd
 				SendPacket(welcomePacket, fromAddress);
 
 				ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
-				playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, usersConnected.Count, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
-				Packet playerPacket = new Packet(PacketType.OBJECT_STATE, 0, playerBodyPacket);
+				playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
+				Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
 				SendPacket(playerPacket, fromAddress);
 				break;
 			case PacketType.WELCOME:
