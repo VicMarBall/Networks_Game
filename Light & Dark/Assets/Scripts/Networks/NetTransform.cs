@@ -19,6 +19,7 @@ public class NetTransform : NetComponent
     // Update is called once per frame
     void Update()
     {
+		if (!netObject.playerIsOwner) { return; }
         if (transform.position != previousPosition) 
         {
             byte[] bytes = ObjectReplicationRegistry.SerializeVector3(transform.position);
