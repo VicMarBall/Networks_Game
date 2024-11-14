@@ -18,6 +18,15 @@ public class NetObjectsManager : MonoBehaviour
 	Queue<int> netIDPendingToCreate = new Queue<int>();
 	Queue<GameObject> objectsPendingToCreate = new Queue<GameObject>();
 
+	struct UpdateObjectInfo
+	{
+		public int netID;
+		public ObjectReplicationClass classToReplicate;
+		public byte[] data;
+	}
+
+	Queue<UpdateObjectInfo> objectsPendingToUpdate = new Queue<UpdateObjectInfo>();
+
 	private void Awake()
 	{
 		if (instance == null)
@@ -42,6 +51,12 @@ public class NetObjectsManager : MonoBehaviour
 				networkObjects.Add(netID, go);
 				go.GetComponent<NetObject>().netID = netID;
 			}
+		}
+
+		while (objectsPendingToUpdate.Count > 0)
+		{
+			UpdateObjectInfo info = objectsPendingToUpdate.Dequeue();
+			UpdateNetObject(info.netID, info.classToReplicate, info.data);
 		}
 	}
 
@@ -96,7 +111,7 @@ public class NetObjectsManager : MonoBehaviour
 					RecreateNetObject(segment.netID, segment.objectClass, segment.objectData);
 					break;
 				case ObjectReplicationAction.UPDATE:
-					UpdateNetObject(segment.netID, segment.objectClass, segment.objectData);
+					PrepareUpdateNetObject(segment.netID, segment.objectClass, segment.objectData);
 					break;
 				case ObjectReplicationAction.DESTROY:
 					DestroyNetObject(segment.netID);
@@ -140,6 +155,15 @@ public class NetObjectsManager : MonoBehaviour
 				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
 				break;
 		}
+	}
+
+	void PrepareUpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	{
+		UpdateObjectInfo updateObjectInfo = new UpdateObjectInfo();
+		updateObjectInfo.netID = netID;
+		updateObjectInfo.classToReplicate = classToReplicate;
+		updateObjectInfo.data = data;
+		objectsPendingToUpdate.Enqueue(updateObjectInfo);
 	}
 
 	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)

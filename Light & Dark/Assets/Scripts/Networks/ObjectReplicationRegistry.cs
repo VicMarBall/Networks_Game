@@ -35,7 +35,7 @@ public static class ObjectReplicationRegistry
 	}
 	public static Vector3 DeserializeVector3(byte[] bytes)
 	{
-		MemoryStream stream = new MemoryStream();
+		MemoryStream stream = new MemoryStream(bytes);
 		BinaryReader reader = new BinaryReader(stream);
 
 		Vector3 vector3 = new Vector3();
@@ -68,7 +68,7 @@ public static class ObjectReplicationRegistry
 	}
 	public static Quaternion DeserializeQuaternion(byte[] bytes)
 	{
-		MemoryStream stream = new MemoryStream();
+		MemoryStream stream = new MemoryStream(bytes);
 		BinaryReader reader = new BinaryReader(stream);
 
 		Quaternion quaternion = new Quaternion();
