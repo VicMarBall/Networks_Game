@@ -18,7 +18,8 @@ public class Server : NetworkingEnd
 
 			foreach (EndPoint user in usersConnected)
 			{
-				SendPacket(packet, user);
+				Thread sendThread = new Thread(() => SendPacket(packet, user));
+				sendThread.Start();
 			}
 		}
 	}
@@ -78,12 +79,12 @@ public class Server : NetworkingEnd
 				break;
 		}
 
-		// send the message to all users EXCEPT origin
-		foreach (EndPoint user in usersConnected)
-		{
-			if (user == fromAddress) { continue; }
-			Thread sendThread = new Thread(() => SendPacket(packet, user));
-			sendThread.Start();
-		}
+		//// send the message to all users EXCEPT origin
+		//foreach (EndPoint user in usersConnected)
+		//{
+		//	if (user == fromAddress) { continue; }
+		//	Thread sendThread = new Thread(() => SendPacket(packet, user));
+		//	sendThread.Start();
+		//}
 	}
 }

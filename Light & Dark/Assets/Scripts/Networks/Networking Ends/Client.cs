@@ -17,7 +17,8 @@ public class Client : NetworkingEnd
 		{
 			Packet packet = preparedPackets.Dequeue();
 
-			SendPacket(packet, targetIPEP);
+			Thread sendThread = new Thread(() => SendPacket(packet, targetIPEP));
+			sendThread.Start();
 		}
 	}
 

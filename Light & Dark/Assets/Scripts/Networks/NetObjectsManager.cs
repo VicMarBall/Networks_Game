@@ -37,8 +37,11 @@ public class NetObjectsManager : MonoBehaviour
 		{
 			GameObject go = Instantiate(objectsPendingToCreate.Dequeue());
 			int netID = netIDPendingToCreate.Dequeue();
-			networkObjects.Add(netID, go);
-			go.GetComponent<NetObject>().netID = netID;
+			if (!networkObjects.ContainsKey(netID))
+			{
+				networkObjects.Add(netID, go);
+				go.GetComponent<NetObject>().netID = netID;
+			}
 		}
 	}
 
@@ -75,7 +78,6 @@ public class NetObjectsManager : MonoBehaviour
 			packetBody.AddSegment(segmentToAdd);
 		}
 
-		// TO CHANGE playerID
 		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, packetBody);
 
 		NetworkingEnd.instance.PreparePacket(packet);
