@@ -8,12 +8,12 @@ public class NetObjectsManager : MonoBehaviour
 	// singleton
 	public static NetObjectsManager instance { get; private set; }
 
+	Dictionary<int, GameObject> networkObjects = new Dictionary<int, GameObject>();
+
 	[SerializeField] GameObject localPlayerPrefab;
 	[SerializeField] GameObject foreignPlayerPrefab;
 
-	Dictionary<int, GameObject> networkObjects = new Dictionary<int, GameObject>();
-
-	Queue<ObjectStatePacketBodySegment> preparedPacketBodies = new Queue<ObjectStatePacketBodySegment>();
+	Queue<ObjectStatePacketBodySegment> preparedObjectStateSegments = new Queue<ObjectStatePacketBodySegment>();
 
 	Queue<int> netIDPendingToCreate = new Queue<int>();
 	Queue<GameObject> objectsPendingToCreate = new Queue<GameObject>();
@@ -44,7 +44,7 @@ public class NetObjectsManager : MonoBehaviour
 
 	private void LateUpdate()
 	{
-		if (preparedPacketBodies.Count > 0)
+		if (preparedObjectStateSegments.Count > 0)
 		{
 			SendObjectStatePacket();
 		}
@@ -52,7 +52,7 @@ public class NetObjectsManager : MonoBehaviour
 
 	public void PrepareBodySegment(ObjectStatePacketBodySegment packetBody)
 	{
-		preparedPacketBodies.Enqueue(packetBody);
+		preparedObjectStateSegments.Enqueue(packetBody);
 	}
 
 	void SendObjectStatePacket()
@@ -62,13 +62,13 @@ public class NetObjectsManager : MonoBehaviour
 		ObjectStatePacketBody packetBody = new ObjectStatePacketBody();
 		
 		int packetSize = 0;
-		while (preparedPacketBodies.Count > 0)
+		while (preparedObjectStateSegments.Count > 0)
 		{
-			ObjectStatePacketBodySegment segmentToAdd = preparedPacketBodies.Dequeue();
+			ObjectStatePacketBodySegment segmentToAdd = preparedObjectStateSegments.Dequeue();
 			packetSize += segmentToAdd.objectData.Length + 96;
 			if (packetSize > MTU) 
 			{	
-				preparedPacketBodies.Enqueue(segmentToAdd);
+				preparedObjectStateSegments.Enqueue(segmentToAdd);
 				break;
 			}
 
@@ -76,7 +76,7 @@ public class NetObjectsManager : MonoBehaviour
 		}
 
 		// TO CHANGE playerID
-		Packet packet = new Packet(PacketType.OBJECT_STATE, 0, packetBody);
+		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, packetBody);
 
 		NetworkingEnd.instance.PreparePacket(packet);
 	}
@@ -88,7 +88,10 @@ public class NetObjectsManager : MonoBehaviour
 			switch (segment.action)
 			{
 				case ObjectReplicationAction.CREATE:
-					CreateNetObject(segment.netID, segment.objectClass, segment.objectData);
+					CreateNetObject(segment.objectClass, segment.objectData);
+					break;
+				case ObjectReplicationAction.RECREATE:
+					RecreateNetObject(segment.netID, segment.objectClass, segment.objectData);
 					break;
 				case ObjectReplicationAction.UPDATE:
 					UpdateNetObject(segment.netID, segment.objectClass, segment.objectData);
@@ -100,24 +103,30 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
-	public void CreateLocalPlayer()
+	void CreateNetObject(ObjectReplicationClass classToReplicate, byte[] data)
 	{
-		CreateNetObject(networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
+		switch (classToReplicate)
+		{
+			case ObjectReplicationClass.LOCAL_PLAYER:
+				netIDPendingToCreate.Enqueue(networkObjects.Count + netIDPendingToCreate.Count);
+				objectsPendingToCreate.Enqueue(localPlayerPrefab);
+				break;
+			case ObjectReplicationClass.FOREIGN_PLAYER:
+				int newNetID = networkObjects.Count + netIDPendingToCreate.Count;
 
-		ObjectStatePacketBodySegment playerSegment = new ObjectStatePacketBodySegment(ObjectReplicationAction.CREATE, networkObjects.Count, ObjectReplicationClass.LOCAL_PLAYER, new byte[1]);
-		PrepareBodySegment(playerSegment);
+				netIDPendingToCreate.Enqueue(newNetID);
+				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
+
+				ObjectStatePacketBody body = new ObjectStatePacketBody();
+				body.AddSegment(ObjectReplicationAction.RECREATE, newNetID, ObjectReplicationClass.LOCAL_PLAYER, data);
+
+				NetworkingEnd.instance.PreparePacket(new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body));
+				break;
+		}
 	}
 
-	public void CreateForeignPlayer()
+	void RecreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
 	{
-		CreateNetObject(NetworkingEnd.instance.userID, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
-	}
-
-	// TO IMPLEMENT
-	void CreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
-	{
-		GameObject go = null;
-
 		switch (classToReplicate)
 		{
 			case ObjectReplicationClass.LOCAL_PLAYER:
@@ -129,14 +138,8 @@ public class NetObjectsManager : MonoBehaviour
 				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
 				break;
 		}
-
-		if (go != null)
-		{
-			networkObjects.Add(netID, go);
-		}
 	}
 
-	// TO IMPLEMENT
 	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
 	{
 		switch (classToReplicate)
@@ -160,5 +163,11 @@ public class NetObjectsManager : MonoBehaviour
 	void DestroyNetObject(int netID)
 	{
 
+	}
+
+	public void CreateLocalPlayer()
+	{
+		netIDPendingToCreate.Enqueue(networkObjects.Count + netIDPendingToCreate.Count);
+		objectsPendingToCreate.Enqueue(localPlayerPrefab);
 	}
 }

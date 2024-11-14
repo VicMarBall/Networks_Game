@@ -23,6 +23,11 @@ public class Server : NetworkingEnd
 		}
 	}
 
+	public override void StartLevel(Vector3 startPoint) 
+	{
+		NetObjectsManager.instance.CreateLocalPlayer();
+	}
+
 	public void StartServer()
 	{
 		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -41,20 +46,23 @@ public class Server : NetworkingEnd
 
 		Packet packet = new Packet(inputPacket);
 
+		if (!usersConnected.Contains(fromAddress))
+		{
+			usersConnected.Add(fromAddress);
+		}
+
 		// host update stuff
 		switch (packet.type)
 		{
 			case PacketType.HELLO:
-				//NetObjectsManager.instance.CreatePlayer();
 				Debug.Log("Server Recieved HELLO");
+
 				WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
-				Packet welcomePacket = new Packet(PacketType.WELCOME, GameManager.instance.playerID, body);
+				Packet welcomePacket = new Packet(PacketType.WELCOME, userID, body);
 				SendPacket(welcomePacket, fromAddress);
 
-				NetObjectsManager.instance.CreateForeignPlayer();
-
 				ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
-				playerBodyPacket.AddSegment(ObjectReplicationAction.CREATE, usersConnected.Count, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
+				playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, usersConnected.Count, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
 				Packet playerPacket = new Packet(PacketType.OBJECT_STATE, 0, playerBodyPacket);
 				SendPacket(playerPacket, fromAddress);
 				break;

@@ -9,8 +9,6 @@ using UnityEngine;
 
 public class Client : NetworkingEnd
 {
-	int playerID = 0;
-
 	IPEndPoint targetIPEP;
 
 	private void LateUpdate()
@@ -46,7 +44,7 @@ public class Client : NetworkingEnd
 
 		// send a first message to the server
 		HelloPacketBody body = new HelloPacketBody();
-		Packet packet = new Packet(PacketType.HELLO, playerID, body);
+		Packet packet = new Packet(PacketType.HELLO, userID, body);
 
 		SendPacket(packet, targetIPEP);
 
@@ -67,7 +65,6 @@ public class Client : NetworkingEnd
 			case PacketType.WELCOME:
 				Debug.Log("Client Recieved WELCOME");
 				WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
-				//NetObjectsManager.instance.CreatePlayer();
 				SetUserID(welcome.newPlayerID);
 				break;
 			case PacketType.PING:
@@ -78,5 +75,12 @@ public class Client : NetworkingEnd
 				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 				break;
 		}
+	}
+
+	public override void StartLevel(Vector3 startPoint)
+	{
+		ObjectStatePacketBody body = new ObjectStatePacketBody();
+		body.AddSegment(ObjectReplicationAction.CREATE, 0, ObjectReplicationClass.FOREIGN_PLAYER, ObjectReplicationRegistry.SerializeVector3(startPoint));
+		PreparePacket(new Packet(PacketType.OBJECT_STATE, userID, body));
 	}
 }

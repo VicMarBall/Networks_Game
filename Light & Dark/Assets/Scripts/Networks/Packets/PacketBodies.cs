@@ -127,8 +127,8 @@ public class PingPacketBody : PacketBody
 
 public enum ObjectReplicationAction
 {
-	REQUEST,
 	CREATE,
+	RECREATE,
 	UPDATE,
 	DESTROY
 }

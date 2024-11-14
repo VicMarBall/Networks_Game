@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class LevelStarter : MonoBehaviour
 {
+	[SerializeField] Vector3 startPosition;
+
 	// called first
 	void Awake()
 	{
@@ -29,7 +31,7 @@ public class LevelStarter : MonoBehaviour
 	void Start()
 	{
 		Debug.Log("Start");
-		NetObjectsManager.instance.CreateLocalPlayer();
+		NetworkingEnd.instance.StartLevel(startPosition);
 	}
 
 	// called when the game is terminated

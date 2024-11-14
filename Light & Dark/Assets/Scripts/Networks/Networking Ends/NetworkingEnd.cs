@@ -57,6 +57,8 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	abstract protected void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress);
 
+	virtual public void StartLevel(Vector3 startPoint) { }
+
 	protected void SendPacket(Packet packet, EndPoint target)
 	{
 		Debug.Log(packet.type + " Packet Sent");
