@@ -10,15 +10,15 @@ public class WallRunning : MonoBehaviour
     public LayerMask isGround;
     public float wallRunForce;
     public float maxWallRunTime;
-    public float wallRunTimer;
+    private float wallRunTimer;
 
     [Header("Input")]
     private float horizontalInput;
     private float verticalInput;
 
     [Header("Detection")]
-    private float wallCheckDistance;
-    private float minJumpHeight;
+    public float wallCheckDistance;
+    public float minJumpHeight;
     private RaycastHit leftWallhit;
     private RaycastHit rightWallhit;
     private bool wallLeft;
@@ -57,7 +57,17 @@ public class WallRunning : MonoBehaviour
 
         if((wallLeft || wallRight) && verticalInput > 0 && AboveGround())
         {
-
+            if (!pm.wallrunning)
+            {
+                StartWallRun();
+            }
+        }
+        else
+        {
+            if (pm.wallrunning)
+            {
+                StopWallRun();
+            }
         }
     }
 
@@ -65,20 +75,38 @@ public class WallRunning : MonoBehaviour
     void Update()
     {
         CheckForWall();
+        StateMachine();
+    }
+
+    private void FixedUpdate()
+    {
+        if (pm.wallrunning)
+            WallRunningMovement();
     }
 
     private void StartWallRun()
     {
-
+        pm.wallrunning = true;
     }
 
-    private void StopWallRunn()
+    private void StopWallRun()
     {
-
+        pm.wallrunning = false;
+        rb.useGravity = true;
     }
 
     private void WallRunningMovement()
     {
+        rb.useGravity = false;
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
+        Vector3 wallNormal = wallRight ? rightWallhit.normal : leftWallhit.normal;
+
+        Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
+
+        if ((orientation.forward - wallForward).magnitude > (orientation.forward + wallForward).magnitude)
+            wallForward = -wallForward;
+
+        rb.AddForce(wallForward * wallRunForce, ForceMode.Force);
     }
 }

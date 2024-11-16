@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6798317854022718008}
   - component: {fileID: 8155812790688378008}
   - component: {fileID: 1423963562158165003}
+  - component: {fileID: 2380430549057125611}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -77,7 +78,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   getsInputs: 0
-  movementSpeed: 7
   walkingSpeed: 7
   runningSpeed: 11
   wallrunSpeed: 7
@@ -86,6 +86,7 @@ MonoBehaviour:
   jumpCooldown: 0.25
   airMultiplier: 0.4
   jumpKey: 32
+  sprintKey: 304
   playerHeight: 2
   whatIsGround:
     serializedVersion: 2
@@ -120,6 +121,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   netObject: {fileID: 0}
+--- !u!114 &2380430549057125611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316104264681942612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7bcab493fd65534a8ab94bb4be0ee0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isWall:
+    serializedVersion: 2
+    m_Bits: 1048576
+  isGround:
+    serializedVersion: 2
+    m_Bits: 1048576
+  wallRunForce: 200
+  maxWallRunTime: 1.5
+  wallCheckDistance: 0.7
+  minJumpHeight: 2
+  orientation: {fileID: 3576703636621285205}
 --- !u!1 &1045965452227395187
 GameObject:
   m_ObjectHideFlags: 0
