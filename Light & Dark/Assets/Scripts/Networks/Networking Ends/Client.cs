@@ -23,10 +23,8 @@ public class Client : NetworkingEnd
 	}
 
 
-	public void StartClient()
+	public void StartClient(string ipTarget = "127.0.0.1")
 	{
-		string ipTarget = "127.0.0.1";
-
 		// create socket and set the target IPEP
 		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 		targetIPEP = new IPEndPoint(IPAddress.Parse(ipTarget), 9050);
