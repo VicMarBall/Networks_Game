@@ -79,6 +79,7 @@ public class Server : NetworkingEnd
 				break;
 		}
 
+		// TO-DO NOW DOESN'T WORK
 		//// send the message to all users EXCEPT origin
 		//foreach (EndPoint user in usersConnected)
 		//{

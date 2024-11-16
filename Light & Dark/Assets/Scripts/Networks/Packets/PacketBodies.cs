@@ -9,7 +9,7 @@ public abstract class PacketBody
 	public abstract void Deserialize(byte[] data);
 }
 
-
+// ---------------------------------------------------------------------------
 public class HelloPacketBody : PacketBody
 {
 	// constructor to send
@@ -47,6 +47,7 @@ public class HelloPacketBody : PacketBody
 	}
 }
 
+// ---------------------------------------------------------------------------
 public class WelcomePacketBody : PacketBody
 {
 	// constructor to send
@@ -86,7 +87,8 @@ public class WelcomePacketBody : PacketBody
 	}
 }
 
-
+// ---------------------------------------------------------------------------
+// NO FUNCTIONALITY
 public class PingPacketBody : PacketBody
 {
 	// constructor to send
@@ -124,7 +126,7 @@ public class PingPacketBody : PacketBody
 	}
 }
 
-
+// ---------------------------------------------------------------------------
 public enum ObjectReplicationAction
 {
 	CREATE,

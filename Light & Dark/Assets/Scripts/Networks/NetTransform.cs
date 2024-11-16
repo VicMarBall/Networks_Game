@@ -20,6 +20,7 @@ public class NetTransform : NetComponent
     void Update()
     {
 		if (!netObject.playerIsOwner) { return; }
+
         if (transform.position != previousPosition) 
         {
             byte[] bytes = ObjectReplicationRegistry.SerializeVector3(transform.position);

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 
+// NOT TO USE
 public class Host : NetworkingEnd
 {
 	int playerID = 0;
