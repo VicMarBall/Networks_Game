@@ -8,7 +8,11 @@ public class PlayerMovement : MonoBehaviour
 	public bool getsInputs;
 
 	[Header("Movement")]
-	public float movementSpeed;
+	private float movementSpeed;
+
+	public float walkingSpeed;
+	public float runningSpeed;
+	public float wallrunSpeed;
 
 	public float groundDrag;
 
@@ -19,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
 
 	[Header("Keybinds")]
 	public KeyCode jumpKey = KeyCode.Space;
+	public KeyCode sprintKey = KeyCode.LeftShift;
 
 	[Header("Ground Check")]
 	public float playerHeight;
@@ -33,6 +38,17 @@ public class PlayerMovement : MonoBehaviour
 	Vector3 moveDirection;
 
 	Rigidbody rb;
+
+	public MovementState state;
+	public enum MovementState
+    {
+		walking,
+		running,
+		wallrunning,
+		air
+    }
+
+	public bool wallrunning;
 
 	// Start is called before the first frame update
 	void Start()
@@ -54,6 +70,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (getsInputs) { GetInputs(); }
 		LimitSpeed();
+		StateHandler();
 
 		// handle drag
 		if (grounded) {
@@ -78,6 +95,29 @@ public class PlayerMovement : MonoBehaviour
 			Invoke(nameof(ResetJump), jumpCooldown);
 		}
 	}
+
+	private void StateHandler()
+    {
+		if (wallrunning)
+        {
+			state = MovementState.wallrunning;
+			movementSpeed = wallrunSpeed;
+        }
+		else if (grounded && Input.GetKey(sprintKey))
+        {
+			state = MovementState.running;
+			movementSpeed = runningSpeed;
+        }
+		else if (grounded)
+        {
+			state = MovementState.walking;
+			movementSpeed = walkingSpeed;
+        }
+		else
+        {
+			state = MovementState.air;
+        }
+    }
 
 	void MovePlayer()
 	{
