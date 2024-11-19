@@ -88,4 +88,17 @@ public class Server : NetworkingEnd
 		//	sendThread.Start();
 		//}
 	}
+
+	public string GetLocalIPAddress()
+	{
+		var host = Dns.GetHostEntry(Dns.GetHostName());
+		foreach (IPAddress ip in host.AddressList) 
+		{
+			if (ip.AddressFamily == AddressFamily.InterNetwork)
+			{
+				return ip.ToString();
+			}
+		}
+		throw new System.Exception("No network adapters with an IPv4 address in the system");
+	}
 }
