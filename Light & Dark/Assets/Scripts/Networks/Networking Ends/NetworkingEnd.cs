@@ -65,4 +65,9 @@ abstract public class NetworkingEnd : MonoBehaviour
 		byte[] data = packet.Serialize();
 		socket.SendTo(data, target);
 	}
+
+	virtual protected void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress)	{ }
+	virtual protected void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) { }
 }

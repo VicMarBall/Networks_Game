@@ -60,21 +60,35 @@ public class Client : NetworkingEnd
 		{
 			case PacketType.HELLO:
 				Debug.Log("Client Recieved HELLO");
+				OnHelloPacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.WELCOME:
 				Debug.Log("Client Recieved WELCOME");
-				WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
-				SetUserID(welcome.newPlayerID);
+				OnWelcomePacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.PING:
 				Debug.Log("Client Recieved PING");
+				OnPingPacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.OBJECT_STATE:
 				Debug.Log("Client Recieved OBJECT_STATE");
-				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
+				OnObjectStatePacketRecieved(packet, fromAddress);
 				break;
 		}
 	}
+
+	protected override void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) 
+	{
+		WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
+		SetUserID(welcome.newPlayerID);
+	}
+	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) 
+	{
+		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
+	}
+
 
 	public override void StartLevel(Vector3 startPoint)
 	{

@@ -57,25 +57,19 @@ public class Server : NetworkingEnd
 		{
 			case PacketType.HELLO:
 				Debug.Log("Server Recieved HELLO");
-
-				WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
-				Packet welcomePacket = new Packet(PacketType.WELCOME, userID, body);
-				SendPacket(welcomePacket, fromAddress);
-
-				ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
-				playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
-				Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
-				SendPacket(playerPacket, fromAddress);
+				OnHelloPacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.WELCOME:
 				Debug.Log("Server Recieved WELCOME");
+				OnWelcomePacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.PING:
 				Debug.Log("Server Recieved PING");
+				OnPingPacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.OBJECT_STATE:
 				Debug.Log("Server Recieved OBJECT_STATE");
-				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
+				OnObjectStatePacketRecieved(packet, fromAddress);
 				break;
 		}
 
@@ -87,6 +81,24 @@ public class Server : NetworkingEnd
 		//	Thread sendThread = new Thread(() => SendPacket(packet, user));
 		//	sendThread.Start();
 		//}
+	}
+
+	protected override void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress)
+	{
+		WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
+		Packet welcomePacket = new Packet(PacketType.WELCOME, userID, body);
+		SendPacket(welcomePacket, fromAddress);
+
+		ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
+		playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, ObjectReplicationClass.FOREIGN_PLAYER, new byte[1]);
+		Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
+		SendPacket(playerPacket, fromAddress);
+	}
+	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
+	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress)
+	{
+		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 	}
 
 	public string GetLocalIPAddress()
