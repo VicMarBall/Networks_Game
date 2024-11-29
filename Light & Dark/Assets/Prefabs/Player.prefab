@@ -11,9 +11,8 @@ GameObject:
   - component: {fileID: 8720890727050766920}
   - component: {fileID: 3070761753463646786}
   - component: {fileID: 6798317854022718008}
-  - component: {fileID: 8155812790688378008}
-  - component: {fileID: 1423963562158165003}
   - component: {fileID: 2380430549057125611}
+  - component: {fileID: 1423963562158165003}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -94,33 +93,6 @@ MonoBehaviour:
   orientation: {fileID: 3576703636621285205}
   state: 0
   wallrunning: 0
---- !u!114 &8155812790688378008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 316104264681942612}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06e9fdf2186a3014c9620e2d2fbaa237, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  netID: 0
-  playerIsOwner: 0
---- !u!114 &1423963562158165003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 316104264681942612}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4bdaf28d987b8d479b33ad4397bb7d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  netObject: {fileID: 0}
 --- !u!114 &2380430549057125611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,6 +116,23 @@ MonoBehaviour:
   wallCheckDistance: 0.7
   minJumpHeight: 2
   orientation: {fileID: 3576703636621285205}
+--- !u!114 &1423963562158165003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316104264681942612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c0eb333a7a4b8348ae6db0ddf9421ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  netID: 0
+  type: 1
+  netPositionTarget: {fileID: 8095315925042266574}
+  netRotationTarget: {fileID: 8095315925042266574}
+  netScaleTarget: {fileID: 8095315925042266574}
 --- !u!1 &1045965452227395187
 GameObject:
   m_ObjectHideFlags: 0
