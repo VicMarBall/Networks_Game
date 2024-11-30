@@ -11,6 +11,7 @@ public enum NetObjectType
 
 public abstract class NetObject : MonoBehaviour
 {
+	public bool isOwner;
 	public int netID;
 	public NetObjectType type { get; protected set; }
 

@@ -4,6 +4,5 @@ using UnityEngine;
 
 public enum NetObjectClass
 {
-	LOCAL_PLAYER,
-	FOREIGN_PLAYER
+	PLAYER,
 }

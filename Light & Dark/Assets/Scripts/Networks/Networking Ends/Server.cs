@@ -90,7 +90,7 @@ public class Server : NetworkingEnd
 		SendPacket(welcomePacket, fromAddress);
 
 		ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
-		playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, NetObjectClass.FOREIGN_PLAYER, new byte[1]);
+		playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, NetObjectClass.PLAYER, new byte[1]);
 		Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
 		SendPacket(playerPacket, fromAddress);
 	}

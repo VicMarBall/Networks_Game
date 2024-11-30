@@ -73,8 +73,6 @@ public class NetPlayer : NetObject
 
     float timeSinceLastStateChange;
 
-	bool isOwner;
-
 	public override void ReceiveData(byte[] data)
 	{
         PlayerData playerData = new PlayerData();

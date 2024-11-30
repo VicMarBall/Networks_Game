@@ -26,33 +26,42 @@ public class NetObjectsManager : MonoBehaviour
 
 	Dictionary<int, NetObject> netObjects = new Dictionary<int, NetObject>();
 
-	Dictionary<int, byte[]> updateDataReceived = new Dictionary<int, byte[]>();
-	Dictionary<int, byte[]> updateDataToSend = new Dictionary<int, byte[]>();
-
-	[SerializeField] NetObject localPlayerPrefab;
-	[SerializeField] NetObject foreignPlayerPrefab;
-
-	Queue<ObjectStateSegment> preparedObjectStateSegmentsToSend = new Queue<ObjectStateSegment>();
-
-	struct NetObjectToCreateData
+	struct NetObjectDataToInstantiate
 	{
+		public int userOwnerID;
 		public int netID;
-		public NetObject netObjectPrefab;
+		public GameObject netObjectPrefab;
 		public Vector3 position;
 	}
 
-	Queue<NetObjectToCreateData> netObjectsPendingToInstantiate = new Queue<NetObjectToCreateData>();
+	Queue<NetObjectDataToInstantiate> netObjectsPendingToInstantiate = new Queue<NetObjectDataToInstantiate>();
+
+	Dictionary<int, byte[]> updateDataReceived = new Dictionary<int, byte[]>();
+	Dictionary<int, byte[]> updateDataToSend = new Dictionary<int, byte[]>();
+
+	Queue<ObjectStateSegment> preparedObjectStateSegmentsToSend = new Queue<ObjectStateSegment>();
+
+	#region NETOBJECT PREFAB LIBRARY
+	[Header("Prefab Library")]
+	[SerializeField] GameObject localPlayerPrefab;
+	[SerializeField] GameObject foreignPlayerPrefab;
+	#endregion
 
 	private void Update()
 	{
 		while (netObjectsPendingToInstantiate.Count > 0)
 		{
-			NetObjectToCreateData netObjectToCreate = netObjectsPendingToInstantiate.Dequeue();
+			NetObjectDataToInstantiate netObjectToCreate = netObjectsPendingToInstantiate.Dequeue();
 
 			if (!netObjects.ContainsKey(netObjectToCreate.netID))
 			{
 				GameObject GO = Instantiate(netObjectToCreate.netObjectPrefab.gameObject);
 				NetObject netObject = GO.GetComponent<NetObject>();
+				if (netObject == null)
+				{
+					netObject = GO.GetComponentInChildren<NetObject>();
+				}
+				netObject.isOwner = (netObjectToCreate.userOwnerID == NetworkingEnd.instance.userID);
 				netObjects.Add(netObjectToCreate.netID, netObject);
 			}
 		}
@@ -128,40 +137,35 @@ public class NetObjectsManager : MonoBehaviour
 	{
 		switch (classToReplicate)
 		{
-			case NetObjectClass.LOCAL_PLAYER:
-				NetObjectToCreateData localPlayerData = new NetObjectToCreateData();
-				localPlayerData.netID = netObjects.Count;
-				localPlayerData.netObjectPrefab = localPlayerPrefab;
+			case NetObjectClass.PLAYER:
+				NetObjectDataToInstantiate playerData = new NetObjectDataToInstantiate();
+				playerData.netID = netObjects.Count;
+				
+				Stream stream = new MemoryStream(data);
+				BinaryReader reader = new BinaryReader(stream);
+				stream.Seek(0, SeekOrigin.Begin);
+
+				playerData.userOwnerID = reader.ReadInt32();
+
+				if (playerData.userOwnerID == NetworkingEnd.instance.userID)
 				{
-					Stream stream = new MemoryStream(data);
-					BinaryReader reader = new BinaryReader(stream);
-					stream.Seek(0, SeekOrigin.Begin);
-
-					localPlayerData.position.x = reader.ReadSingle();
-					localPlayerData.position.y = reader.ReadSingle();
-					localPlayerData.position.z = reader.ReadSingle();
-
-					stream.Close();
+					playerData.netObjectPrefab = localPlayerPrefab;
 				}
-				netObjectsPendingToInstantiate.Enqueue(localPlayerData);
-				break;
-			case NetObjectClass.FOREIGN_PLAYER:
-				NetObjectToCreateData foreignPlayerData = new NetObjectToCreateData();
-				foreignPlayerData.netID = netObjects.Count;
-				foreignPlayerData.netObjectPrefab = localPlayerPrefab;
+				else
 				{
-					Stream stream = new MemoryStream(data);
-					BinaryReader reader = new BinaryReader(stream);
-					stream.Seek(0, SeekOrigin.Begin);
-
-					foreignPlayerData.position.x = reader.ReadSingle();
-					foreignPlayerData.position.y = reader.ReadSingle();
-					foreignPlayerData.position.z = reader.ReadSingle();
-
-					stream.Close();
+					playerData.netObjectPrefab = foreignPlayerPrefab;
 				}
-				netObjectsPendingToInstantiate.Enqueue(foreignPlayerData);
 
+
+				playerData.position.x = reader.ReadSingle();
+				playerData.position.y = reader.ReadSingle();
+				playerData.position.z = reader.ReadSingle();
+
+				stream.Close();
+				
+				netObjectsPendingToInstantiate.Enqueue(playerData);
+
+				preparedObjectStateSegmentsToSend.Enqueue(new ObjectStateSegment(ObjectReplicationAction.RECREATE, playerData.netID, NetObjectClass.PLAYER, data));
 				break;
 		}
 	}
@@ -170,39 +174,32 @@ public class NetObjectsManager : MonoBehaviour
 	{
 		switch (classToReplicate)
 		{
-			case NetObjectClass.LOCAL_PLAYER:
-				NetObjectToCreateData localPlayerData = new NetObjectToCreateData();
-				localPlayerData.netID = netID;
-				localPlayerData.netObjectPrefab = localPlayerPrefab;
+			case NetObjectClass.PLAYER:
+				NetObjectDataToInstantiate playerData = new NetObjectDataToInstantiate();
+				playerData.netID = netID;
+
+				Stream stream = new MemoryStream(data);
+				BinaryReader reader = new BinaryReader(stream);
+				stream.Seek(0, SeekOrigin.Begin);
+
+				playerData.userOwnerID = reader.ReadInt32();
+
+				if (playerData.userOwnerID == NetworkingEnd.instance.userID)
 				{
-					Stream stream = new MemoryStream(data);
-					BinaryReader reader = new BinaryReader(stream);
-					stream.Seek(0, SeekOrigin.Begin);
-
-					localPlayerData.position.x = reader.ReadSingle();
-					localPlayerData.position.y = reader.ReadSingle();
-					localPlayerData.position.z = reader.ReadSingle();
-
-					stream.Close();
+					playerData.netObjectPrefab = localPlayerPrefab;
 				}
-				netObjectsPendingToInstantiate.Enqueue(localPlayerData);
-				break;
-			case NetObjectClass.FOREIGN_PLAYER:
-				NetObjectToCreateData foreignPlayerData = new NetObjectToCreateData();
-				foreignPlayerData.netID = netID;
-				foreignPlayerData.netObjectPrefab = foreignPlayerPrefab;
+				else
 				{
-					Stream stream = new MemoryStream(data);
-					BinaryReader reader = new BinaryReader(stream);
-					stream.Seek(0, SeekOrigin.Begin);
-
-					foreignPlayerData.position.x = reader.ReadSingle();
-					foreignPlayerData.position.y = reader.ReadSingle();
-					foreignPlayerData.position.z = reader.ReadSingle();
-
-					stream.Close();
+					playerData.netObjectPrefab = foreignPlayerPrefab;
 				}
-				netObjectsPendingToInstantiate.Enqueue(foreignPlayerData);
+
+				playerData.position.x = reader.ReadSingle();
+				playerData.position.y = reader.ReadSingle();
+				playerData.position.z = reader.ReadSingle();
+
+				stream.Close();
+
+				netObjectsPendingToInstantiate.Enqueue(playerData);
 				break;
 		}
 	}
@@ -219,22 +216,11 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
-	void UpdateNetObject(int netID, byte[] data)
-	{
-		netObjects[netID].ReceiveData(data);
-	}
-
 	// TO IMPLEMENT
 	void DestroyNetObject(int netID)
 	{
 
 	}
-
-	//public void CreateLocalPlayer()
-	//{
-	//	netIDPendingToCreate.Enqueue(netObjects.Count + netIDPendingToCreate.Count);
-	//	objectsPendingToCreate.Enqueue(localPlayerPrefab);
-	//}
 
 	public void ReceiveNetObjectData(int netID, byte[] data)
 	{
