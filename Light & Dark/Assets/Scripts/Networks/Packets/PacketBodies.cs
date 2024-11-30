@@ -135,9 +135,9 @@ public enum ObjectReplicationAction
 	DESTROY
 }
 
-public struct ObjectStatePacketBodySegment
+public struct ObjectStateSegment
 {
-	public ObjectStatePacketBodySegment(ObjectReplicationAction action, int netID, ObjectReplicationClass objectClass, byte[] objectData)
+	public ObjectStateSegment(ObjectReplicationAction action, int netID, NetObjectClass objectClass, byte[] objectData)
 	{
 		this.action = action;
 		this.netID = netID;
@@ -147,7 +147,7 @@ public struct ObjectStatePacketBodySegment
 
 	public ObjectReplicationAction action { get; private set; }
 	public int netID { get; private set; }
-	public ObjectReplicationClass objectClass { get; private set; }
+	public NetObjectClass objectClass { get; private set; }
 	public byte[] objectData { get; private set; }
 
 	public byte[] Serialize()
@@ -173,7 +173,7 @@ public struct ObjectStatePacketBodySegment
 
 		action = (ObjectReplicationAction)reader.ReadInt32();
 		netID = reader.ReadInt32();
-		objectClass = (ObjectReplicationClass)reader.ReadInt32();
+		objectClass = (NetObjectClass)reader.ReadInt32();
 
 		int objectDataLength = (int)(stream.Length - stream.Position);
 		objectData = reader.ReadBytes(objectDataLength);
@@ -195,13 +195,13 @@ public class ObjectStatePacketBody : PacketBody
 		Deserialize(data);
 	}
 
-	public List<ObjectStatePacketBodySegment> segments = new List<ObjectStatePacketBodySegment>();
+	public List<ObjectStateSegment> segments = new List<ObjectStateSegment>();
 
-	public void AddSegment(ObjectReplicationAction action, int netID, ObjectReplicationClass objectClass, byte[] data)
+	public void AddSegment(ObjectReplicationAction action, int netID, NetObjectClass objectClass, byte[] data)
 	{
-		segments.Add(new ObjectStatePacketBodySegment(action, netID, objectClass, data));
+		segments.Add(new ObjectStateSegment(action, netID, objectClass, data));
 	}
-	public void AddSegment(ObjectStatePacketBodySegment segment)
+	public void AddSegment(ObjectStateSegment segment)
 	{
 		segments.Add(segment);
 	}
@@ -238,7 +238,7 @@ public class ObjectStatePacketBody : PacketBody
 		{
 			int lengthSegment = reader.ReadInt32();
 			byte[] segmentData = reader.ReadBytes(lengthSegment);
-			ObjectStatePacketBodySegment segment = new ObjectStatePacketBodySegment();
+			ObjectStateSegment segment = new ObjectStateSegment();
 			segment.Deserialize(segmentData);
 			segments.Add(segment);
 		}

@@ -1,0 +1,5 @@
+
+public enum NetObjectClassType
+{
+	PLAYER
+}

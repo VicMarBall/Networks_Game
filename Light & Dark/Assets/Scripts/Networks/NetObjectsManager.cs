@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using static UnityEngine.Rendering.HableCurve;
 
 public class NetObjectsManager : MonoBehaviour
 {
@@ -27,28 +29,29 @@ public class NetObjectsManager : MonoBehaviour
 	Dictionary<int, byte[]> updateDataReceived = new Dictionary<int, byte[]>();
 	Dictionary<int, byte[]> updateDataToSend = new Dictionary<int, byte[]>();
 
-	[SerializeField] GameObject localPlayerPrefab;
-	[SerializeField] GameObject foreignPlayerPrefab;
+	[SerializeField] NetObject localPlayerPrefab;
+	[SerializeField] NetObject foreignPlayerPrefab;
 
-	Queue<ObjectStatePacketBodySegment> preparedObjectStateSegmentsToSend = new Queue<ObjectStatePacketBodySegment>();
+	Queue<ObjectStateSegment> preparedObjectStateSegmentsToSend = new Queue<ObjectStateSegment>();
 
-	struct NetObjectData
+	struct NetObjectToCreateData
 	{
 		public int netID;
-		public NetObject netObject;
+		public NetObject netObjectPrefab;
+		public Vector3 position;
 	}
 
-	Queue<NetObjectData> netObjectsPendingToCreate = new Queue<NetObjectData>();
+	Queue<NetObjectToCreateData> netObjectsPendingToInstantiate = new Queue<NetObjectToCreateData>();
 
 	private void Update()
 	{
-		while (netObjectsPendingToCreate.Count > 0)
+		while (netObjectsPendingToInstantiate.Count > 0)
 		{
-			NetObjectData netObjectToCreate = netObjectsPendingToCreate.Dequeue();
+			NetObjectToCreateData netObjectToCreate = netObjectsPendingToInstantiate.Dequeue();
 
 			if (!netObjects.ContainsKey(netObjectToCreate.netID))
 			{
-				GameObject GO = Instantiate(netObjectToCreate.netObject.gameObject);
+				GameObject GO = Instantiate(netObjectToCreate.netObjectPrefab.gameObject);
 				NetObject netObject = GO.GetComponent<NetObject>();
 				netObjects.Add(netObjectToCreate.netID, netObject);
 			}
@@ -69,7 +72,7 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
-	public void PrepareBodySegment(ObjectStatePacketBodySegment packetBody)
+	public void PrepareBodySegment(ObjectStateSegment packetBody)
 	{
 		preparedObjectStateSegmentsToSend.Enqueue(packetBody);
 	}
@@ -83,7 +86,7 @@ public class NetObjectsManager : MonoBehaviour
 		int packetSize = 0;
 		while (preparedObjectStateSegmentsToSend.Count > 0)
 		{
-			ObjectStatePacketBodySegment segmentToAdd = preparedObjectStateSegmentsToSend.Dequeue();
+			ObjectStateSegment segmentToAdd = preparedObjectStateSegmentsToSend.Dequeue();
 			packetSize += segmentToAdd.objectData.Length + 96;
 			if (packetSize > MTU) 
 			{	
@@ -101,7 +104,7 @@ public class NetObjectsManager : MonoBehaviour
 
 	public void ManageObjectStatePacket(ObjectStatePacketBody packetBody)
 	{
-		foreach (ObjectStatePacketBodySegment segment in packetBody.segments)
+		foreach (ObjectStateSegment segment in packetBody.segments)
 		{
 			switch (segment.action)
 			{
@@ -112,7 +115,7 @@ public class NetObjectsManager : MonoBehaviour
 					RecreateNetObject(segment.netID, segment.objectClass, segment.objectData);
 					break;
 				case ObjectReplicationAction.UPDATE:
-					PrepareUpdateNetObject(segment.netID, segment.objectClass, segment.objectData);
+					PrepareUpdateNetObject(segment.netID, segment.objectData);
 					break;
 				case ObjectReplicationAction.DESTROY:
 					DestroyNetObject(segment.netID);
@@ -121,69 +124,104 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
-	void CreateNetObject(ObjectReplicationClass classToReplicate, byte[] data)
+	void CreateNetObject(NetObjectClass classToReplicate, byte[] data)
 	{
 		switch (classToReplicate)
 		{
-			case ObjectReplicationClass.LOCAL_PLAYER:
-				netIDPendingToCreate.Enqueue(netObjects.Count + netIDPendingToCreate.Count);
-				objectsPendingToCreate.Enqueue(localPlayerPrefab);
+			case NetObjectClass.LOCAL_PLAYER:
+				NetObjectToCreateData localPlayerData = new NetObjectToCreateData();
+				localPlayerData.netID = netObjects.Count;
+				localPlayerData.netObjectPrefab = localPlayerPrefab;
+				{
+					Stream stream = new MemoryStream(data);
+					BinaryReader reader = new BinaryReader(stream);
+					stream.Seek(0, SeekOrigin.Begin);
+
+					localPlayerData.position.x = reader.ReadSingle();
+					localPlayerData.position.y = reader.ReadSingle();
+					localPlayerData.position.z = reader.ReadSingle();
+
+					stream.Close();
+				}
+				netObjectsPendingToInstantiate.Enqueue(localPlayerData);
 				break;
-			case ObjectReplicationClass.FOREIGN_PLAYER:
-				int newNetID = netObjects.Count + netIDPendingToCreate.Count;
+			case NetObjectClass.FOREIGN_PLAYER:
+				NetObjectToCreateData foreignPlayerData = new NetObjectToCreateData();
+				foreignPlayerData.netID = netObjects.Count;
+				foreignPlayerData.netObjectPrefab = localPlayerPrefab;
+				{
+					Stream stream = new MemoryStream(data);
+					BinaryReader reader = new BinaryReader(stream);
+					stream.Seek(0, SeekOrigin.Begin);
 
-				netIDPendingToCreate.Enqueue(newNetID);
-				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
+					foreignPlayerData.position.x = reader.ReadSingle();
+					foreignPlayerData.position.y = reader.ReadSingle();
+					foreignPlayerData.position.z = reader.ReadSingle();
 
-				ObjectStatePacketBody body = new ObjectStatePacketBody();
-				body.AddSegment(ObjectReplicationAction.RECREATE, newNetID, ObjectReplicationClass.LOCAL_PLAYER, data);
+					stream.Close();
+				}
+				netObjectsPendingToInstantiate.Enqueue(foreignPlayerData);
 
-				NetworkingEnd.instance.PreparePacket(new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body));
 				break;
 		}
 	}
 
-	void RecreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	void RecreateNetObject(int netID, NetObjectClass classToReplicate, byte[] data)
 	{
 		switch (classToReplicate)
 		{
-			case ObjectReplicationClass.LOCAL_PLAYER:
-				netIDPendingToCreate.Enqueue(netID);
-				objectsPendingToCreate.Enqueue(localPlayerPrefab);
+			case NetObjectClass.LOCAL_PLAYER:
+				NetObjectToCreateData localPlayerData = new NetObjectToCreateData();
+				localPlayerData.netID = netID;
+				localPlayerData.netObjectPrefab = localPlayerPrefab;
+				{
+					Stream stream = new MemoryStream(data);
+					BinaryReader reader = new BinaryReader(stream);
+					stream.Seek(0, SeekOrigin.Begin);
+
+					localPlayerData.position.x = reader.ReadSingle();
+					localPlayerData.position.y = reader.ReadSingle();
+					localPlayerData.position.z = reader.ReadSingle();
+
+					stream.Close();
+				}
+				netObjectsPendingToInstantiate.Enqueue(localPlayerData);
 				break;
-			case ObjectReplicationClass.FOREIGN_PLAYER:
-				netIDPendingToCreate.Enqueue(netID);
-				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
+			case NetObjectClass.FOREIGN_PLAYER:
+				NetObjectToCreateData foreignPlayerData = new NetObjectToCreateData();
+				foreignPlayerData.netID = netID;
+				foreignPlayerData.netObjectPrefab = foreignPlayerPrefab;
+				{
+					Stream stream = new MemoryStream(data);
+					BinaryReader reader = new BinaryReader(stream);
+					stream.Seek(0, SeekOrigin.Begin);
+
+					foreignPlayerData.position.x = reader.ReadSingle();
+					foreignPlayerData.position.y = reader.ReadSingle();
+					foreignPlayerData.position.z = reader.ReadSingle();
+
+					stream.Close();
+				}
+				netObjectsPendingToInstantiate.Enqueue(foreignPlayerData);
 				break;
 		}
 	}
 
-	void PrepareUpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	void PrepareUpdateNetObject(int netID, byte[] data)
 	{
-		UpdateObjectInfo updateObjectInfo = new UpdateObjectInfo();
-		updateObjectInfo.netID = netID;
-		updateObjectInfo.classToReplicate = classToReplicate;
-		updateObjectInfo.data = data;
-		objectsPendingToUpdate.Enqueue(updateObjectInfo);
+		if (updateDataReceived.ContainsKey(netID))
+		{
+			updateDataReceived[netID] = data;
+		}
+		else
+		{
+			updateDataReceived.Add(netID, data);
+		}
 	}
 
-	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	void UpdateNetObject(int netID, byte[] data)
 	{
-		switch (classToReplicate)
-		{
-			case ObjectReplicationClass.POSITION:
-				Vector3 position = ObjectReplicationRegistry.DeserializeVector3(data);
-				netObjects[netID].transform.position = position;
-				break;
-			case ObjectReplicationClass.ROTATION:
-				Quaternion rotation = ObjectReplicationRegistry.DeserializeQuaternion(data);
-				netObjects[netID].transform.rotation = rotation;
-				break;
-			case ObjectReplicationClass.SCALE:
-				Vector3 scale = ObjectReplicationRegistry.DeserializeVector3(data);
-				netObjects[netID].transform.localScale = scale;
-				break;
-		}
+		netObjects[netID].ReceiveData(data);
 	}
 
 	// TO IMPLEMENT
