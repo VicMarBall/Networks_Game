@@ -8,5 +8,6 @@ public abstract class NetObject : MonoBehaviour
 	public int netID;
 	public NetObjectClass type { get; protected set; }
 
-	public abstract void ReceiveData(byte[] data);
+	public abstract void ReceiveUpdateData(byte[] data);
+	public abstract byte[] SerializeToRecreate();
 }

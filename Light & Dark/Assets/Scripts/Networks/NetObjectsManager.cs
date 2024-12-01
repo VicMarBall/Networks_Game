@@ -1,8 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using static UnityEngine.Rendering.HableCurve;
+using UnityEngine.SceneManagement;
+
+public struct NetObjectDataToInstantiate
+{
+	public int userOwnerID;
+	public int netID;
+	public GameObject netObjectPrefab;
+	public Vector3 position;
+}
 
 public class NetObjectsManager : MonoBehaviour
 {
@@ -26,13 +33,6 @@ public class NetObjectsManager : MonoBehaviour
 
 	Dictionary<int, NetObject> netObjects = new Dictionary<int, NetObject>();
 
-	struct NetObjectDataToInstantiate
-	{
-		public int userOwnerID;
-		public int netID;
-		public GameObject netObjectPrefab;
-		public Vector3 position;
-	}
 
 	Queue<NetObjectDataToInstantiate> netObjectsPendingToInstantiate = new Queue<NetObjectDataToInstantiate>();
 
@@ -86,7 +86,7 @@ public class NetObjectsManager : MonoBehaviour
 
 		foreach (var item in updateDataReceived)
 		{
-			netObjects[item.Key].ReceiveData(item.Value);
+			netObjects[item.Key].ReceiveUpdateData(item.Value);
 		}
 		updateDataReceived.Clear();
 
@@ -256,34 +256,37 @@ public class NetObjectsManager : MonoBehaviour
 
 	public void SendNetObjectsToAllUsers()
 	{
-		NetworkingEnd.instance.SendPacketToAllUsers(SerializeNetObjectsDictionary());
+		NetworkingEnd.instance.SendPacketToAllUsers(PrepareLevelReplicationPacket());
 	}
 
-	Packet SerializeNetObjectsDictionary()
+	Packet PrepareLevelReplicationPacket()
 	{
-		ObjectStatePacketBody body = new ObjectStatePacketBody();
+		string levelName = SceneManager.GetActiveScene().name;
 
-		foreach (var item in netObjects)
+		List<DataToRecreateNetObject> netObjetsToSend = new List<DataToRecreateNetObject>();
+
+		foreach (var netObject in netObjects)
 		{
-			MemoryStream stream = new MemoryStream();
-			BinaryWriter writer = new BinaryWriter(stream);
+			DataToRecreateNetObject dataToRecreate = new DataToRecreateNetObject();
+			dataToRecreate.netID = netObject.Key;
+			dataToRecreate.netClass = netObject.Value.type;
+			dataToRecreate.data = netObject.Value.SerializeToRecreate();
 
-			switch (item.Value.type)
-			{
-				case NetObjectClass.PLAYER:
-					writer.Write(item.Key);
-					writer.Write(((NetPlayer)item.Value).GetPlayerData().Serialize());
-					break;
-			}
-
-			byte[] objectAsBytes = stream.ToArray();
-			stream.Close();
-
-			body.AddSegment(ObjectReplicationAction.RECREATE, item.Key, item.Value.type, objectAsBytes);
+			netObjetsToSend.Add(dataToRecreate);
 		}
 
-		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body);
+		LevelReplicationPacketBody body = new LevelReplicationPacketBody(levelName, netObjetsToSend);
+
+		Packet packet = new Packet(PacketType.LEVEL_REPLICATION, NetworkingEnd.instance.userID, body);
 
 		return packet;
+	}
+
+	public void ReplicateLevelObjects(List<DataToRecreateNetObject> objectsToRecreate)
+	{
+		foreach (var objToRecreate in objectsToRecreate)
+		{
+			RecreateNetObject(objToRecreate.netID, objToRecreate.netClass, objToRecreate.data);
+		}
 	}
 }

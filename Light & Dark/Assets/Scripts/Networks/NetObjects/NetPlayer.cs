@@ -73,7 +73,7 @@ public class NetPlayer : NetObject
 
     float timeSinceLastStateChange;
 
-	public override void ReceiveData(byte[] data)
+	public override void ReceiveUpdateData(byte[] data)
 	{
         PlayerData playerData = new PlayerData();
 
@@ -145,5 +145,10 @@ public class NetPlayer : NetObject
 		playerData.scale = netScaleTarget.localScale;
 
 		return playerData;
+	}
+
+	public override byte[] SerializeToRecreate()
+	{
+		return GetPlayerData().Serialize();
 	}
 }

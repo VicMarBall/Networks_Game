@@ -31,6 +31,7 @@ public class LevelStarter : MonoBehaviour
 	void Start()
 	{
 		Debug.Log("Start");
+		GameManager.instance.isInsideLevel = true;
 		NetworkingEnd.instance.StartLevel(startPosition);
 	}
 

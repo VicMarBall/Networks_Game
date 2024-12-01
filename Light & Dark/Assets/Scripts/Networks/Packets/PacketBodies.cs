@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.Rendering.HableCurve;
 
 public abstract class PacketBody
 {
@@ -241,6 +243,106 @@ public class ObjectStatePacketBody : PacketBody
 			ObjectStateSegment segment = new ObjectStateSegment();
 			segment.Deserialize(segmentData);
 			segments.Add(segment);
+		}
+
+		stream.Close();
+	}
+}
+
+// -----------------------------------------------------------------------------------
+public struct DataToRecreateNetObject
+{
+	public int netID;
+	public NetObjectClass netClass;
+	public byte[] data;
+
+	public byte[] Serialize()
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write(netID);
+		writer.Write((int)netClass);
+		writer.Write(data.Length);
+		writer.Write(data);
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes;
+	}
+
+	public void Deserialize(byte[] dataToDeserialize)
+	{
+		Stream stream = new MemoryStream(dataToDeserialize);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		netID = reader.ReadInt32();
+		netClass = (NetObjectClass)reader.ReadInt32();
+		int dataLength = reader.ReadInt32();
+		data = reader.ReadBytes(dataLength);
+
+		stream.Close();
+	}
+
+}
+
+public class LevelReplicationPacketBody : PacketBody
+{
+	// constructor to send
+	// constructor to recieve
+	public LevelReplicationPacketBody(string levelName, List<DataToRecreateNetObject> netObjectsData)
+	{
+		this.levelName = levelName;
+		this.netObjectsData = netObjectsData;
+	}
+	public LevelReplicationPacketBody(byte[] data)
+	{
+		Deserialize(data);
+	}
+
+	public string levelName;
+	public List<DataToRecreateNetObject> netObjectsData;
+
+	public override byte[] Serialize()
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write(levelName);
+
+		writer.Write(netObjectsData.Count);
+		foreach (var objectData in netObjectsData)
+		{
+			byte[] objectBytes = objectData.Serialize();
+			writer.Write(objectBytes.Length);
+			writer.Write(objectBytes);
+		}
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes;
+	}
+
+	public override void Deserialize(byte[] data)
+	{
+		Stream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		levelName = reader.ReadString();
+
+		int nObjects = reader.ReadInt32();
+
+		for (int i = 0; i < nObjects; ++i)
+		{
+			int lengthItem = reader.ReadInt32();
+			byte[] itemData = reader.ReadBytes(lengthItem);
+			DataToRecreateNetObject item = new DataToRecreateNetObject();
+			item.Deserialize(itemData);
+			netObjectsData.Add(item);
 		}
 
 		stream.Close();

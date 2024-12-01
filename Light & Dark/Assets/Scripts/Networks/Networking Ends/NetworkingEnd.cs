@@ -27,6 +27,8 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	protected Socket socket;
 
+	// client: usersConnected = server / host
+	// server / host: usersConnected = all clients
 	protected List<EndPoint> usersConnected = new List<EndPoint>();
 
 	protected Queue<Packet> preparedPackets = new Queue<Packet>();
@@ -59,20 +61,24 @@ abstract public class NetworkingEnd : MonoBehaviour
 		switch (packet.type)
 		{
 			case PacketType.HELLO:
-				Debug.Log("Server Recieved HELLO");
+				Debug.Log("Recieved HELLO");
 				OnHelloPacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.WELCOME:
-				Debug.Log("Server Recieved WELCOME");
+				Debug.Log("Recieved WELCOME");
 				OnWelcomePacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.PING:
-				Debug.Log("Server Recieved PING");
+				Debug.Log("Recieved PING");
 				OnPingPacketRecieved(packet, fromAddress);
 				break;
 			case PacketType.OBJECT_STATE:
-				Debug.Log("Server Recieved OBJECT_STATE");
+				Debug.Log("Recieved OBJECT_STATE");
 				OnObjectStatePacketRecieved(packet, fromAddress);
+				break;
+			case PacketType.LEVEL_REPLICATION:
+				Debug.Log("Recieved LEVEL_REPLICATION");
+				OnLevelReplicationPacketRecieved(packet, fromAddress);
 				break;
 		}
 
@@ -89,6 +95,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 	virtual protected void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnLevelReplicationPacketRecieved(Packet packet, EndPoint fromAddress) { }
 
 	protected void SendPacket(Packet packet, EndPoint target)
 	{

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Client : NetworkingEnd
 {
@@ -30,8 +31,6 @@ public class Client : NetworkingEnd
 		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 		targetIPEP = new IPEndPoint(IPAddress.Parse(ipTarget), 9050);
 
-		usersConnected.Add(targetIPEP);
-
 		Debug.Log("Client Created");
 
 		Thread mainThread = new Thread(ConnectToServer);
@@ -43,6 +42,8 @@ public class Client : NetworkingEnd
 		socket.Connect(targetIPEP);
 
 		Debug.Log("Client Connected to Server");
+
+		usersConnected.Add(targetIPEP);
 
 		// send a first message to the server
 		HelloPacketBody body = new HelloPacketBody();
@@ -66,7 +67,12 @@ public class Client : NetworkingEnd
 	{
 		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 	}
-
+	protected override void OnLevelReplicationPacketRecieved(Packet packet, EndPoint fromAddress)
+	{
+		LevelReplicationPacketBody levelReplication = (LevelReplicationPacketBody)packet.body;
+		SceneManager.LoadScene(levelReplication.levelName);
+		NetObjectsManager.instance.ReplicateLevelObjects(levelReplication.netObjectsData);
+	}
 
 	public override void StartLevel(Vector3 startPoint)
 	{

@@ -10,7 +10,7 @@ public enum GameplayEnvironmentMode
 
 public class GameManager : MonoBehaviour
 {
-	// singleton
+	#region SINGLETON
 	public static GameManager instance { get; private set; }
 
 	private void Awake()
@@ -25,9 +25,9 @@ public class GameManager : MonoBehaviour
 			Destroy(gameObject);
 		}
 	}
+	#endregion
 
-	public int playerID {  get; private set; }
-	public void SetPlayerID(int playerID) { this.playerID = playerID; }
+	public bool isInsideLevel = false;
 
 	public GameplayEnvironmentMode gameplayEnvironmentMode { get; private set; }
 }
