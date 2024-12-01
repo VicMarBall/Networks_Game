@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-struct PlayerData
+public struct PlayerData
 {
     public Vector3 position;
     public Vector3 rotation;
@@ -136,7 +136,7 @@ public class NetPlayer : NetObject
 		nextScale = playerData.scale;
 	}
 
-	PlayerData GetPlayerData()
+	public PlayerData GetPlayerData()
 	{
 		PlayerData playerData = new PlayerData();
 

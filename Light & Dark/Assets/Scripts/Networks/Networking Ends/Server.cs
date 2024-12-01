@@ -58,6 +58,8 @@ public class Server : NetworkingEnd
 
 
 		NetObjectsManager.instance.PrepareNetObjectCreate(NetObjectClass.PLAYER, objectAsBytes);
+
+		NetObjectsManager.instance.SendNetObjectsToAllUsers();
 	}
 
 

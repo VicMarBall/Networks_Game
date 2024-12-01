@@ -253,4 +253,37 @@ public class NetObjectsManager : MonoBehaviour
 		else
 			updateDataToSend.Add(netID, data);
 	}
+
+	public void SendNetObjectsToAllUsers()
+	{
+		NetworkingEnd.instance.SendPacketToAllUsers(SerializeNetObjectsDictionary());
+	}
+
+	Packet SerializeNetObjectsDictionary()
+	{
+		ObjectStatePacketBody body = new ObjectStatePacketBody();
+
+		foreach (var item in netObjects)
+		{
+			MemoryStream stream = new MemoryStream();
+			BinaryWriter writer = new BinaryWriter(stream);
+
+			switch (item.Value.type)
+			{
+				case NetObjectClass.PLAYER:
+					writer.Write(item.Key);
+					writer.Write(((NetPlayer)item.Value).GetPlayerData().Serialize());
+					break;
+			}
+
+			byte[] objectAsBytes = stream.ToArray();
+			stream.Close();
+
+			body.AddSegment(ObjectReplicationAction.RECREATE, item.Key, item.Value.type, objectAsBytes);
+		}
+
+		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body);
+
+		return packet;
+	}
 }
