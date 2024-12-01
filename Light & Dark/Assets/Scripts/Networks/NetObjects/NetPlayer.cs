@@ -84,7 +84,7 @@ public class NetPlayer : NetObject
 
 	void Awake()
 	{
-        type = NetObjectType.PLAYER;
+        type = NetObjectClass.PLAYER;
 	}
 
 	void Update()
@@ -105,7 +105,7 @@ public class NetPlayer : NetObject
 
 			if (sendPlayerData)
 			{
-				NetObjectsManager.instance.ReceiveNetObjectData(netID, GetPlayerData().Serialize());
+				NetObjectsManager.instance.PrepareNetObjectUpdate(netID, GetPlayerData().Serialize());
 			}
 		}
 		else

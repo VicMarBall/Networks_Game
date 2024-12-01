@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using static UnityEngine.Rendering.HableCurve;
 
 public class Server : NetworkingEnd
 {
@@ -26,7 +28,20 @@ public class Server : NetworkingEnd
 
 	public override void StartLevel(Vector3 startPoint) 
 	{
-		// NetObjectsManager.instance.CreateLocalPlayer();
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write(userID);
+
+		writer.Write(startPoint.x);
+		writer.Write(startPoint.y);
+		writer.Write(startPoint.z);
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+
+		NetObjectsManager.instance.PrepareNetObjectCreate(NetObjectClass.PLAYER, objectAsBytes);
 	}
 
 	public void StartServer()
@@ -89,10 +104,10 @@ public class Server : NetworkingEnd
 		Packet welcomePacket = new Packet(PacketType.WELCOME, userID, body);
 		SendPacket(welcomePacket, fromAddress);
 
-		ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
-		playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, NetObjectClass.PLAYER, new byte[1]);
-		Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
-		SendPacket(playerPacket, fromAddress);
+		//ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
+		//playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, NetObjectClass.PLAYER, new byte[1]);
+		//Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
+		//SendPacket(playerPacket, fromAddress);
 	}
 	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }

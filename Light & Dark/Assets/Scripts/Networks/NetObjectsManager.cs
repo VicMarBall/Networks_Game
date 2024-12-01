@@ -39,6 +39,8 @@ public class NetObjectsManager : MonoBehaviour
 	Dictionary<int, byte[]> updateDataReceived = new Dictionary<int, byte[]>();
 	Dictionary<int, byte[]> updateDataToSend = new Dictionary<int, byte[]>();
 
+	float timeSinceLastSending;
+
 	Queue<ObjectStateSegment> preparedObjectStateSegmentsToSend = new Queue<ObjectStateSegment>();
 
 	#region NETOBJECT PREFAB LIBRARY
@@ -49,13 +51,15 @@ public class NetObjectsManager : MonoBehaviour
 
 	private void Update()
 	{
+		timeSinceLastSending += Time.deltaTime;
+
 		while (netObjectsPendingToInstantiate.Count > 0)
 		{
 			NetObjectDataToInstantiate netObjectToCreate = netObjectsPendingToInstantiate.Dequeue();
 
 			if (!netObjects.ContainsKey(netObjectToCreate.netID))
 			{
-				GameObject GO = Instantiate(netObjectToCreate.netObjectPrefab.gameObject);
+				GameObject GO = Instantiate(netObjectToCreate.netObjectPrefab.gameObject, netObjectToCreate.position, Quaternion.identity);
 				NetObject netObject = GO.GetComponent<NetObject>();
 				if (netObject == null)
 				{
@@ -64,6 +68,20 @@ public class NetObjectsManager : MonoBehaviour
 				netObject.isOwner = (netObjectToCreate.userOwnerID == NetworkingEnd.instance.userID);
 				netObjects.Add(netObjectToCreate.netID, netObject);
 			}
+		}
+
+		if (timeSinceLastSending > 0.1)
+		{
+			timeSinceLastSending = 0;
+
+			foreach (var toSend in updateDataToSend)
+			{
+				ObjectStateSegment objectStateSegment = new ObjectStateSegment(ObjectReplicationAction.UPDATE, toSend.Key, netObjects[toSend.Key].type, toSend.Value);
+				preparedObjectStateSegmentsToSend.Enqueue(objectStateSegment);
+			}
+
+			if (preparedObjectStateSegmentsToSend.Count > 0)
+				SendObjectStatePacket();
 		}
 
 		foreach (var item in updateDataReceived)
@@ -75,10 +93,10 @@ public class NetObjectsManager : MonoBehaviour
 
 	private void LateUpdate()
 	{
-		if (preparedObjectStateSegmentsToSend.Count > 0)
-		{
-			SendObjectStatePacket();
-		}
+		//if (preparedObjectStateSegmentsToSend.Count > 0)
+		//{
+		//	SendObjectStatePacket();
+		//}
 	}
 
 	public void PrepareBodySegment(ObjectStateSegment packetBody)
@@ -222,7 +240,12 @@ public class NetObjectsManager : MonoBehaviour
 
 	}
 
-	public void ReceiveNetObjectData(int netID, byte[] data)
+	public void PrepareNetObjectCreate(NetObjectClass classToCreate, byte[] data)
+	{
+		CreateNetObject(classToCreate, data);
+	}
+
+	public void PrepareNetObjectUpdate(int netID, byte[] data)
 	{
 		if (updateDataToSend.ContainsKey(netID))
 			updateDataToSend[netID] = data;

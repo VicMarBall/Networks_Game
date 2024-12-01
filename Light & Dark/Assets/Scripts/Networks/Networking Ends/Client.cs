@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -92,8 +93,19 @@ public class Client : NetworkingEnd
 
 	public override void StartLevel(Vector3 startPoint)
 	{
-		//ObjectStatePacketBody body = new ObjectStatePacketBody();
-		//body.AddSegment(ObjectReplicationAction.CREATE, userID, ObjectReplicationClass.FOREIGN_PLAYER, ObjectReplicationRegistry.SerializeVector3(startPoint));
-		//PreparePacket(new Packet(PacketType.OBJECT_STATE, userID, body));
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write(userID);
+
+		writer.Write(startPoint.x);
+		writer.Write(startPoint.y);
+		writer.Write(startPoint.z);
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+
+		NetObjectsManager.instance.PrepareNetObjectCreate(NetObjectClass.PLAYER, objectAsBytes);
 	}
 }
