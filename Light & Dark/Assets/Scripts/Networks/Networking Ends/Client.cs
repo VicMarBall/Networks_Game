@@ -30,6 +30,8 @@ public class Client : NetworkingEnd
 		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 		targetIPEP = new IPEndPoint(IPAddress.Parse(ipTarget), 9050);
 
+		usersConnected.Add(targetIPEP);
+
 		Debug.Log("Client Created");
 
 		Thread mainThread = new Thread(ConnectToServer);
@@ -53,36 +55,11 @@ public class Client : NetworkingEnd
 		receiveThread.Start();
 	}
 
-	protected override void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress)
-	{
-		Packet packet = new Packet(inputPacket);
-
-		switch (packet.type)
-		{
-			case PacketType.HELLO:
-				Debug.Log("Client Recieved HELLO");
-				OnHelloPacketRecieved(packet, fromAddress);
-				break;
-			case PacketType.WELCOME:
-				Debug.Log("Client Recieved WELCOME");
-				OnWelcomePacketRecieved(packet, fromAddress);
-				break;
-			case PacketType.PING:
-				Debug.Log("Client Recieved PING");
-				OnPingPacketRecieved(packet, fromAddress);
-				break;
-			case PacketType.OBJECT_STATE:
-				Debug.Log("Client Recieved OBJECT_STATE");
-				OnObjectStatePacketRecieved(packet, fromAddress);
-				break;
-		}
-	}
-
 	protected override void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) 
 	{
 		WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
-		SetUserID(welcome.newPlayerID);
+		userID = welcome.newPlayerID;
 	}
 	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) 
@@ -104,7 +81,6 @@ public class Client : NetworkingEnd
 
 		byte[] objectAsBytes = stream.ToArray();
 		stream.Close();
-
 
 		NetObjectsManager.instance.PrepareNetObjectCreate(NetObjectClass.PLAYER, objectAsBytes);
 	}

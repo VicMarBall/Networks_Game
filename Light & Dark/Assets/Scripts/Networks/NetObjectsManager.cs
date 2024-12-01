@@ -89,6 +89,7 @@ public class NetObjectsManager : MonoBehaviour
 			netObjects[item.Key].ReceiveData(item.Value);
 		}
 		updateDataReceived.Clear();
+
 	}
 
 	private void LateUpdate()
@@ -126,7 +127,7 @@ public class NetObjectsManager : MonoBehaviour
 
 		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, packetBody);
 
-		NetworkingEnd.instance.PreparePacket(packet);
+		NetworkingEnd.instance.SendPacketToAllUsers(packet);
 	}
 
 	public void ManageObjectStatePacket(ObjectStatePacketBody packetBody)
