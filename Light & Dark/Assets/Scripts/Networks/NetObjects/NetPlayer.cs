@@ -91,7 +91,7 @@ public class NetPlayer : NetObject
 	{
 		timeSinceLastStateChange += Time.deltaTime;
 
-		if (isOwner)
+		if (IsOwner())
 		{
 			bool sendPlayerData = false;
 			if (previousPosition != netPositionTarget.position)

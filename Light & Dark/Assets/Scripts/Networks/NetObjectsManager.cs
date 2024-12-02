@@ -65,7 +65,7 @@ public class NetObjectsManager : MonoBehaviour
 				{
 					netObject = GO.GetComponentInChildren<NetObject>();
 				}
-				netObject.isOwner = (netObjectToCreate.userOwnerID == NetworkingEnd.instance.userID);
+				netObject.ownerID = netObjectToCreate.userOwnerID;
 				netObjects.Add(netObjectToCreate.netID, netObject);
 			}
 		}
