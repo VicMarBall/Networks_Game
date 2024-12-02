@@ -71,23 +71,21 @@ public class Client : NetworkingEnd
 	{
 		LevelReplicationPacketBody levelReplication = (LevelReplicationPacketBody)packet.body;
 		SceneManager.LoadScene(levelReplication.levelName);
-		NetObjectsManager.instance.ReplicateLevelObjects(levelReplication.netObjectsData);
+		//NetObjectsManager.instance.ReplicateLevelObjects(levelReplication.netObjectsData);
 	}
 
 	public override void StartLevel(Vector3 startPoint)
 	{
-		MemoryStream stream = new MemoryStream();
-		BinaryWriter writer = new BinaryWriter(stream);
+		PlayerData playerData = new PlayerData();
+		playerData.position = startPoint;
+		playerData.rotation = Vector3.zero;
+		playerData.scale = Vector3.one;
 
-		writer.Write(userID);
+		DataToCreateNetObject dataToCreate = new DataToCreateNetObject();
+		dataToCreate.ownerID = userID;
+		dataToCreate.netClass = NetObjectClass.PLAYER;
+		dataToCreate.objectData = playerData.Serialize();
 
-		writer.Write(startPoint.x);
-		writer.Write(startPoint.y);
-		writer.Write(startPoint.z);
-
-		byte[] objectAsBytes = stream.ToArray();
-		stream.Close();
-
-		NetObjectsManager.instance.PrepareNetObjectCreate(NetObjectClass.PLAYER, objectAsBytes);
+		NetObjectsManager.instance.ReceiveObjectStateToSend(-1, new ObjectStateSegment(ObjectReplicationAction.CREATE, dataToCreate.Serialize()));
 	}
 }

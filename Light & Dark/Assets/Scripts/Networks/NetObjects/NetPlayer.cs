@@ -1,4 +1,5 @@
 using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public struct PlayerData
@@ -73,18 +74,9 @@ public class NetPlayer : NetObject
 
     float timeSinceLastStateChange;
 
-	public override void ReceiveUpdateData(byte[] data)
-	{
-        PlayerData playerData = new PlayerData();
-
-		playerData.Deserialize(data);
-
-		UpdateNetPlayer(playerData);
-	}
-
 	void Awake()
 	{
-        type = NetObjectClass.PLAYER;
+        netClass = NetObjectClass.PLAYER;
 	}
 
 	void Update()
@@ -105,7 +97,8 @@ public class NetPlayer : NetObject
 
 			if (sendPlayerData)
 			{
-				NetObjectsManager.instance.PrepareNetObjectUpdate(netID, GetPlayerData().Serialize());
+				ObjectStateSegment objectStateSegment = new ObjectStateSegment(ObjectReplicationAction.UPDATE, GetDataToUpdate().Serialize());
+				NetObjectsManager.instance.ReceiveObjectStateToSend(netID, objectStateSegment);
 			}
 		}
 		else
@@ -121,6 +114,15 @@ public class NetPlayer : NetObject
 				netScaleTarget.localScale = Vector3.Lerp(previousScale, nextScale, timeSinceLastStateChange);
 			#endregion
 		}
+	}
+
+	public override void UpdateObjectData(byte[] objectDataToUpdate)
+	{
+		PlayerData playerData = new PlayerData();
+
+		playerData.Deserialize(objectDataToUpdate);
+
+		UpdateNetPlayer(playerData);
 	}
 
 	void UpdateNetPlayer(PlayerData playerData)
@@ -147,7 +149,7 @@ public class NetPlayer : NetObject
 		return playerData;
 	}
 
-	public override byte[] SerializeToRecreate()
+	protected override byte[] GetObjectData()
 	{
 		return GetPlayerData().Serialize();
 	}
