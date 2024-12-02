@@ -233,7 +233,10 @@ public class NetObjectsManager : MonoBehaviour
 
 	void UpdateNetObject(DataToUpdateNetObject dataToUpdate)
 	{
-		netObjects[dataToUpdate.netID].UpdateObjectData(dataToUpdate.objectData);
+		if (netObjects.ContainsKey(dataToUpdate.netID))
+		{
+			netObjects[dataToUpdate.netID].UpdateObjectData(dataToUpdate.objectData);
+		}
 	}
 
 	// TO IMPLEMENT
