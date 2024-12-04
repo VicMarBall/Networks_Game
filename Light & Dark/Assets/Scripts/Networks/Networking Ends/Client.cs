@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Client : NetworkingEnd
 {
@@ -41,6 +43,8 @@ public class Client : NetworkingEnd
 
 		Debug.Log("Client Connected to Server");
 
+		usersConnected.Add(targetIPEP);
+
 		// send a first message to the server
 		HelloPacketBody body = new HelloPacketBody();
 		Packet packet = new Packet(PacketType.HELLO, userID, body);
@@ -52,48 +56,41 @@ public class Client : NetworkingEnd
 		receiveThread.Start();
 	}
 
-	protected override void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress)
-	{
-		Packet packet = new Packet(inputPacket);
-
-		switch (packet.type)
-		{
-			case PacketType.HELLO:
-				Debug.Log("Client Recieved HELLO");
-				OnHelloPacketRecieved(packet, fromAddress);
-				break;
-			case PacketType.WELCOME:
-				Debug.Log("Client Recieved WELCOME");
-				OnWelcomePacketRecieved(packet, fromAddress);
-				break;
-			case PacketType.PING:
-				Debug.Log("Client Recieved PING");
-				OnPingPacketRecieved(packet, fromAddress);
-				break;
-			case PacketType.OBJECT_STATE:
-				Debug.Log("Client Recieved OBJECT_STATE");
-				OnObjectStatePacketRecieved(packet, fromAddress);
-				break;
-		}
-	}
-
 	protected override void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) 
 	{
 		WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
-		SetUserID(welcome.newPlayerID);
+		userID = welcome.newPlayerID;
 	}
 	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) 
 	{
 		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 	}
-
+	protected override void OnLevelReplicationPacketRecieved(Packet packet, EndPoint fromAddress)
+	{
+		LevelReplicationPacketBody levelReplication = (LevelReplicationPacketBody)packet.body;
+		SceneManager.LoadScene(levelReplication.levelName);
+		//NetObjectsManager.instance.ReplicateLevelObjects(levelReplication.netObjectsData);
+	}
 
 	public override void StartLevel(Vector3 startPoint)
 	{
-		ObjectStatePacketBody body = new ObjectStatePacketBody();
-		body.AddSegment(ObjectReplicationAction.CREATE, userID, ObjectReplicationClass.FOREIGN_PLAYER, ObjectReplicationRegistry.SerializeVector3(startPoint));
-		PreparePacket(new Packet(PacketType.OBJECT_STATE, userID, body));
+		PlayerData playerData = new PlayerData();
+		playerData.position = startPoint;
+		playerData.rotation = Vector3.zero;
+		playerData.scale = Vector3.one;
+
+		DataToCreateNetObject dataToCreate = new DataToCreateNetObject();
+		dataToCreate.ownerID = userID;
+		dataToCreate.netClass = NetObjectClass.PLAYER;
+		dataToCreate.objectData = playerData.Serialize();
+
+		NetObjectsManager.instance.ReceiveObjectStateToSend(-1, new ObjectStateSegment(ObjectReplicationAction.CREATE, dataToCreate.Serialize()));
+	}
+
+	public override bool IsServer()
+	{
+		return false;
 	}
 }

@@ -8,9 +8,10 @@ using UnityEngine;
 // NOT TO USE
 public class Host : NetworkingEnd
 {
-	int playerID = 0;
-
-	public List<EndPoint> usersConnected = new List<EndPoint>();
+	public override bool IsServer()
+	{
+		return true;
+	}
 
 	public void StartHost()
 	{
@@ -22,32 +23,5 @@ public class Host : NetworkingEnd
 
 		Thread newConnection = new Thread(ReceivePacket);
 		newConnection.Start();
-	}
-
-	protected override void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress)
-	{
-		Debug.Log("Packet Received");
-
-		Packet packet = new Packet(inputPacket);
-
-		// host update stuff
-		switch (packet.type)
-		{
-			case PacketType.HELLO:
-				break;
-			case PacketType.PING:
-				break;
-			case PacketType.OBJECT_STATE:
-				NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
-				break;
-		}
-
-		// send the message to all users EXCEPT origin
-		foreach (EndPoint user in usersConnected)
-		{
-			if (user == fromAddress) { continue; }
-			Thread sendThread = new Thread(() => SendPacket(packet, user));
-			sendThread.Start();
-		}
 	}
 }

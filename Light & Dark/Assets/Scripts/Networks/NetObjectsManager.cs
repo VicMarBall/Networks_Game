@@ -1,30 +1,12 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NetObjectsManager : MonoBehaviour
 {
-	// singleton
+	#region SINGLETON
 	public static NetObjectsManager instance { get; private set; }
-
-	Dictionary<int, GameObject> networkObjects = new Dictionary<int, GameObject>();
-
-	[SerializeField] GameObject localPlayerPrefab;
-	[SerializeField] GameObject foreignPlayerPrefab;
-
-	Queue<ObjectStatePacketBodySegment> preparedObjectStateSegments = new Queue<ObjectStatePacketBodySegment>();
-
-	Queue<int> netIDPendingToCreate = new Queue<int>();
-	Queue<GameObject> objectsPendingToCreate = new Queue<GameObject>();
-
-	struct UpdateObjectInfo
-	{
-		public int netID;
-		public ObjectReplicationClass classToReplicate;
-		public byte[] data;
-	}
-
-	Queue<UpdateObjectInfo> objectsPendingToUpdate = new Queue<UpdateObjectInfo>();
 
 	private void Awake()
 	{
@@ -39,164 +21,282 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
+	#endregion
+
+	Dictionary<int, NetObject> netObjects = new Dictionary<int, NetObject>();
+
+	int nextNetID = 0;
+
+	Queue<DataToCreateNetObject> pendingToCreate = new Queue<DataToCreateNetObject>();
+	Queue<DataToRecreateNetObject> pendingToRecreate = new Queue<DataToRecreateNetObject>();
+	Queue<DataToUpdateNetObject> pendingToUpdate = new Queue<DataToUpdateNetObject>();
+	Queue<DataToDestroyNetObject> pendingToDestroy = new Queue<DataToDestroyNetObject>();
+
+	float timeSinceLastSending;
+	Dictionary<int, ObjectStateSegment> objectStatesToSend = new Dictionary<int, ObjectStateSegment>();
+
+	#region NETOBJECT PREFAB LIBRARY
+	[Header("Prefab Library")]
+	[SerializeField] GameObject localPlayerPrefab;
+	[SerializeField] GameObject foreignPlayerPrefab;
+	#endregion
+
 	private void Update()
 	{
-		while (objectsPendingToCreate.Count > 0)
+		timeSinceLastSending += Time.deltaTime;
+
+		while (pendingToDestroy.Count > 0)
 		{
-			GameObject go = Instantiate(objectsPendingToCreate.Dequeue());
-			if (go.GetComponent<NetObject>() == null)
-			{
-				go = go.GetComponentInChildren<NetObject>().gameObject;
-			}
-			int netID = netIDPendingToCreate.Dequeue();
-			if (!networkObjects.ContainsKey(netID))
-			{
-				networkObjects.Add(netID, go);
-				go.GetComponent<NetObject>().netID = netID;
-			}
+			DataToDestroyNetObject dataToDestroy = pendingToDestroy.Dequeue();
+			DestroyNetObject(dataToDestroy);
 		}
 
-		while (objectsPendingToUpdate.Count > 0)
+		while (pendingToUpdate.Count > 0)
 		{
-			UpdateObjectInfo info = objectsPendingToUpdate.Dequeue();
-			UpdateNetObject(info.netID, info.classToReplicate, info.data);
+			DataToUpdateNetObject dataToUpdate = pendingToUpdate.Dequeue();
+			UpdateNetObject(dataToUpdate);
 		}
+
+		while (pendingToRecreate.Count > 0)
+		{
+			DataToRecreateNetObject dataToRecreate = pendingToRecreate.Dequeue();
+			RecreateNetObject(dataToRecreate);
+		}
+
+		while (pendingToCreate.Count > 0)
+		{
+			DataToCreateNetObject dataToCreate = pendingToCreate.Dequeue();
+			CreateNetObject(dataToCreate);
+		}
+
+		SendObjectStatePacket();
 	}
 
-	private void LateUpdate()
+	public void ReceiveObjectStateToSend(int netID, ObjectStateSegment segment)
 	{
-		if (preparedObjectStateSegments.Count > 0)
+		if (objectStatesToSend.ContainsKey(netID))
 		{
-			SendObjectStatePacket();
+			objectStatesToSend[netID] = segment;
 		}
-	}
-
-	public void PrepareBodySegment(ObjectStatePacketBodySegment packetBody)
-	{
-		preparedObjectStateSegments.Enqueue(packetBody);
+		else
+		{
+			objectStatesToSend.Add(netID, segment);
+		}
 	}
 
 	void SendObjectStatePacket()
 	{
-		int MTU = 1000;
+		//int MTU = 1000;
 
 		ObjectStatePacketBody packetBody = new ObjectStatePacketBody();
-		
-		int packetSize = 0;
-		while (preparedObjectStateSegments.Count > 0)
+
+		bool hasPacket = false;
+
+		//int packetSize = 0;
+		foreach (var objectState in objectStatesToSend.Values)
 		{
-			ObjectStatePacketBodySegment segmentToAdd = preparedObjectStateSegments.Dequeue();
-			packetSize += segmentToAdd.objectData.Length + 96;
-			if (packetSize > MTU) 
-			{	
-				preparedObjectStateSegments.Enqueue(segmentToAdd);
-				break;
-			}
-
-			packetBody.AddSegment(segmentToAdd);
+			packetBody.AddSegment(objectState);
+			hasPacket = true;
 		}
+		objectStatesToSend.Clear();
+		//while (preparedObjectStateSegmentsToSend.Count > 0)
+		//{
+		//	ObjectStateSegment segmentToAdd = preparedObjectStateSegmentsToSend.Dequeue();
+		//	packetSize += segmentToAdd.dataToAction.Length + 32;
+		//	if (packetSize > MTU) 
+		//	{	
+		//		preparedObjectStateSegmentsToSend.Enqueue(segmentToAdd);
+		//		break;
+		//	}
 
+		//	packetBody.AddSegment(segmentToAdd);
+		//}
+		if (!hasPacket) { return; }
 		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, packetBody);
 
-		NetworkingEnd.instance.PreparePacket(packet);
+		NetworkingEnd.instance.SendPacketToAllUsers(packet);
 	}
+
+	public void CreateNetObjectFromLocal(DataToCreateNetObject dataToCreate)
+	{
+		pendingToCreate.Enqueue(dataToCreate);
+	}
+
 
 	public void ManageObjectStatePacket(ObjectStatePacketBody packetBody)
 	{
-		foreach (ObjectStatePacketBodySegment segment in packetBody.segments)
+		foreach (ObjectStateSegment segment in packetBody.segments)
 		{
 			switch (segment.action)
 			{
 				case ObjectReplicationAction.CREATE:
-					CreateNetObject(segment.objectClass, segment.objectData);
+					DataToCreateNetObject dataToCreate = new DataToCreateNetObject();
+					dataToCreate.Deserialize(segment.dataToAction);
+					pendingToCreate.Enqueue(dataToCreate);
 					break;
 				case ObjectReplicationAction.RECREATE:
-					RecreateNetObject(segment.netID, segment.objectClass, segment.objectData);
+					DataToRecreateNetObject dataToRecreate = new DataToRecreateNetObject();
+					dataToRecreate.Deserialize(segment.dataToAction);
+					pendingToRecreate.Enqueue(dataToRecreate);
 					break;
 				case ObjectReplicationAction.UPDATE:
-					PrepareUpdateNetObject(segment.netID, segment.objectClass, segment.objectData);
+					DataToUpdateNetObject dataToUpdate = new DataToUpdateNetObject();
+					dataToUpdate.Deserialize(segment.dataToAction);
+					pendingToUpdate.Enqueue(dataToUpdate);
 					break;
 				case ObjectReplicationAction.DESTROY:
-					DestroyNetObject(segment.netID);
+					DataToDestroyNetObject dataToDestroy = new DataToDestroyNetObject();
+					dataToDestroy.Deserialize(segment.dataToAction);
+					pendingToDestroy.Enqueue(dataToDestroy);
 					break;
 			}
 		}
 	}
 
-	void CreateNetObject(ObjectReplicationClass classToReplicate, byte[] data)
+	void CreateNetObject(DataToCreateNetObject dataToCreate)
 	{
-		switch (classToReplicate)
+		if (!NetworkingEnd.instance.IsServer()) { return; }
+		switch (dataToCreate.netClass)
 		{
-			case ObjectReplicationClass.LOCAL_PLAYER:
-				netIDPendingToCreate.Enqueue(networkObjects.Count + netIDPendingToCreate.Count);
-				objectsPendingToCreate.Enqueue(localPlayerPrefab);
+			case NetObjectClass.PLAYER:
+
+				GameObject GO;
+				if (dataToCreate.ownerID == NetworkingEnd.instance.userID)
+				{
+					GO = Instantiate(localPlayerPrefab);
+				}
+				else
+				{
+					GO = Instantiate(foreignPlayerPrefab);
+				}
+
+				NetPlayer netPlayer = GO.GetComponent<NetPlayer>();
+				if (netPlayer == null)
+				{
+					netPlayer = GO.GetComponentInChildren<NetPlayer>();
+				}
+
+				netPlayer.ownerID = dataToCreate.ownerID;
+
+				netPlayer.netID = nextNetID;
+				nextNetID++;
+
+				netPlayer.UpdateObjectData(dataToCreate.objectData);
+
+				netObjects.Add(netPlayer.netID, netPlayer);
+
+				DataToRecreateNetObject dataToRecreate = new DataToRecreateNetObject();
+				dataToRecreate.netID = netPlayer.netID;
+				dataToRecreate.netClass = NetObjectClass.PLAYER;
+				dataToRecreate.ownerID = dataToCreate.ownerID;
+				dataToRecreate.objectData = dataToCreate.objectData;
+
+				objectStatesToSend.Add(dataToRecreate.netID, new ObjectStateSegment(ObjectReplicationAction.RECREATE, dataToRecreate.Serialize()));
+
 				break;
-			case ObjectReplicationClass.FOREIGN_PLAYER:
-				int newNetID = networkObjects.Count + netIDPendingToCreate.Count;
+		}
 
-				netIDPendingToCreate.Enqueue(newNetID);
-				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
+	}
 
-				ObjectStatePacketBody body = new ObjectStatePacketBody();
-				body.AddSegment(ObjectReplicationAction.RECREATE, newNetID, ObjectReplicationClass.LOCAL_PLAYER, data);
+	void RecreateNetObject(DataToRecreateNetObject dataToRecreate)
+	{
+		switch (dataToRecreate.netClass)
+		{
+			case NetObjectClass.PLAYER:
 
-				NetworkingEnd.instance.PreparePacket(new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body));
+				GameObject GO;
+				if (dataToRecreate.ownerID == NetworkingEnd.instance.userID)
+				{
+					GO = Instantiate(localPlayerPrefab);
+				}
+				else
+				{
+					GO = Instantiate(foreignPlayerPrefab);
+				}
+
+				NetPlayer netPlayer = GO.GetComponent<NetPlayer>();
+				if (netPlayer == null)
+				{
+					netPlayer = GO.GetComponentInChildren<NetPlayer>();
+				}
+
+				netPlayer.ownerID = dataToRecreate.ownerID;
+
+				netPlayer.netID = dataToRecreate.netID;
+				nextNetID = dataToRecreate.netID + 1;
+
+				netPlayer.UpdateObjectData(dataToRecreate.objectData);
+
+				netObjects.Add(netPlayer.netID, netPlayer);
 				break;
 		}
 	}
 
-	void RecreateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
+	void UpdateNetObject(DataToUpdateNetObject dataToUpdate)
 	{
-		switch (classToReplicate)
+		if (netObjects.ContainsKey(dataToUpdate.netID))
 		{
-			case ObjectReplicationClass.LOCAL_PLAYER:
-				netIDPendingToCreate.Enqueue(netID);
-				objectsPendingToCreate.Enqueue(localPlayerPrefab);
-				break;
-			case ObjectReplicationClass.FOREIGN_PLAYER:
-				netIDPendingToCreate.Enqueue(netID);
-				objectsPendingToCreate.Enqueue(foreignPlayerPrefab);
-				break;
-		}
-	}
-
-	void PrepareUpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
-	{
-		UpdateObjectInfo updateObjectInfo = new UpdateObjectInfo();
-		updateObjectInfo.netID = netID;
-		updateObjectInfo.classToReplicate = classToReplicate;
-		updateObjectInfo.data = data;
-		objectsPendingToUpdate.Enqueue(updateObjectInfo);
-	}
-
-	void UpdateNetObject(int netID, ObjectReplicationClass classToReplicate, byte[] data)
-	{
-		switch (classToReplicate)
-		{
-			case ObjectReplicationClass.POSITION:
-				Vector3 position = ObjectReplicationRegistry.DeserializeVector3(data);
-				networkObjects[netID].transform.position = position;
-				break;
-			case ObjectReplicationClass.ROTATION:
-				Quaternion rotation = ObjectReplicationRegistry.DeserializeQuaternion(data);
-				networkObjects[netID].transform.rotation = rotation;
-				break;
-			case ObjectReplicationClass.SCALE:
-				Vector3 scale = ObjectReplicationRegistry.DeserializeVector3(data);
-				networkObjects[netID].transform.localScale = scale;
-				break;
+			netObjects[dataToUpdate.netID].UpdateObjectData(dataToUpdate.objectData);
 		}
 	}
 
 	// TO IMPLEMENT
-	void DestroyNetObject(int netID)
+	void DestroyNetObject(DataToDestroyNetObject dataToDestroy)
 	{
 
 	}
 
-	public void CreateLocalPlayer()
+	ObjectStateSegment GetSegmentToRecreateNetObjectsDictionary(int netID)
 	{
-		netIDPendingToCreate.Enqueue(networkObjects.Count + netIDPendingToCreate.Count);
-		objectsPendingToCreate.Enqueue(localPlayerPrefab);
+		ObjectStateSegment segment = new ObjectStateSegment(ObjectReplicationAction.RECREATE, netObjects[netID].GetDataToRecreate().Serialize());
+
+		return segment;
 	}
+
+	public Packet GetNetObjectsPacket()
+	{
+		ObjectStatePacketBody body = new ObjectStatePacketBody();
+
+		foreach (var key in netObjects.Keys)
+		{
+			body.AddSegment(GetSegmentToRecreateNetObjectsDictionary(key));
+		}
+
+		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body);
+
+		return packet;
+	}
+
+	//public void SendNetObjectsToAllUsers()
+	//{
+	//	NetworkingEnd.instance.SendPacketToAllUsers(PrepareLevelReplicationPacket());
+	//}
+
+	//Packet PrepareLevelReplicationPacket()
+	//{
+	//	string levelName = SceneManager.GetActiveScene().name;
+
+	//	List<DataToRecreateNetObject> netObjetsToSend = new List<DataToRecreateNetObject>();
+
+	//	foreach (var netObject in netObjects)
+	//	{
+	//		DataToRecreateNetObject dataToRecreate = netObject.Value.GetDataToRecreate();
+
+	//		netObjetsToSend.Add(dataToRecreate);
+	//	}
+
+	//	LevelReplicationPacketBody body = new LevelReplicationPacketBody(levelName, netObjetsToSend);
+
+	//	Packet packet = new Packet(PacketType.LEVEL_REPLICATION, NetworkingEnd.instance.userID, body);
+
+	//	return packet;
+	//}
+
+	//public void ReplicateLevelObjects(List<DataToRecreateNetObject> objectsToRecreate)
+	//{
+	//	foreach (var objToRecreate in objectsToRecreate)
+	//	{
+	//		RecreateNetObject(objToRecreate.netID, objToRecreate.netClass, objToRecreate.data);
+	//	}
+	//}
 }

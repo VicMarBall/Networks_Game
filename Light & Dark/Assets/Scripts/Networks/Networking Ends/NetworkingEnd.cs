@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using UnityEngine;
 
 abstract public class NetworkingEnd : MonoBehaviour
 {
-	public int userID {  get; private set; }
-	// singleton
+	#region SINGLETON
 	public static NetworkingEnd instance { get; private set; }
 
 	private void Awake()
@@ -22,15 +22,18 @@ abstract public class NetworkingEnd : MonoBehaviour
 			Destroy(gameObject);
 		}
 	}
+	#endregion
+	public int userID { get; protected set; }
 
 	protected Socket socket;
 
+	// client: usersConnected = server / host
+	// server / host: usersConnected = all clients
+	protected List<EndPoint> usersConnected = new List<EndPoint>();
+
 	protected Queue<Packet> preparedPackets = new Queue<Packet>();
 
-	protected void SetUserID(int userID)
-	{
-		this.userID = userID;
-	}
+	public abstract bool IsServer();
 
 	protected void ReceivePacket()
 	{
@@ -50,14 +53,51 @@ abstract public class NetworkingEnd : MonoBehaviour
 		}
 	}
 
-	public void PreparePacket(Packet packet) 
+	protected void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress)
 	{
-		preparedPackets.Enqueue(packet);
+		Debug.Log("Packet Received");
+
+		Packet packet = new Packet(inputPacket);
+
+		// host update stuff
+		switch (packet.type)
+		{
+			case PacketType.HELLO:
+				Debug.Log("Recieved HELLO");
+				OnHelloPacketRecieved(packet, fromAddress);
+				break;
+			case PacketType.WELCOME:
+				Debug.Log("Recieved WELCOME");
+				OnWelcomePacketRecieved(packet, fromAddress);
+				break;
+			case PacketType.PING:
+				Debug.Log("Recieved PING");
+				OnPingPacketRecieved(packet, fromAddress);
+				break;
+			case PacketType.OBJECT_STATE:
+				Debug.Log("Recieved OBJECT_STATE");
+				OnObjectStatePacketRecieved(packet, fromAddress);
+				break;
+			case PacketType.LEVEL_REPLICATION:
+				Debug.Log("Recieved LEVEL_REPLICATION");
+				OnLevelReplicationPacketRecieved(packet, fromAddress);
+				break;
+		}
+
+		// send the message to all users EXCEPT origin
+		foreach (EndPoint user in usersConnected)
+		{
+			if (user.Equals(fromAddress)) { continue; }
+			Thread sendThread = new Thread(() => SendPacket(packet, user));
+			sendThread.Start();
+		}
 	}
 
-	abstract protected void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress);
-
-	virtual public void StartLevel(Vector3 startPoint) { }
+	virtual protected void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnLevelReplicationPacketRecieved(Packet packet, EndPoint fromAddress) { }
 
 	protected void SendPacket(Packet packet, EndPoint target)
 	{
@@ -66,8 +106,14 @@ abstract public class NetworkingEnd : MonoBehaviour
 		socket.SendTo(data, target);
 	}
 
-	virtual protected void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress) { }
-	virtual protected void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress)	{ }
-	virtual protected void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
-	virtual protected void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) { }
+	public void SendPacketToAllUsers(Packet packet) 
+	{
+		foreach (EndPoint user in usersConnected)
+		{
+			Thread sendThread = new Thread(() => SendPacket(packet, user));
+			sendThread.Start();
+		}
+	}
+
+	virtual public void StartLevel(Vector3 startPoint) { }
 }
