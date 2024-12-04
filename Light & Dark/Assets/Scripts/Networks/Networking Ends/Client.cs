@@ -88,4 +88,9 @@ public class Client : NetworkingEnd
 
 		NetObjectsManager.instance.ReceiveObjectStateToSend(-1, new ObjectStateSegment(ObjectReplicationAction.CREATE, dataToCreate.Serialize()));
 	}
+
+	public override bool IsServer()
+	{
+		return false;
+	}
 }

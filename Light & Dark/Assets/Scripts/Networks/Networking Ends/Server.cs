@@ -30,6 +30,8 @@ public class Server : NetworkingEnd
 		Packet welcomePacket = new Packet(PacketType.WELCOME, userID, body);
 		SendPacket(welcomePacket, fromAddress);
 
+		SendPacket(NetObjectsManager.instance.GetNetObjectsPacket(), fromAddress);
+
 		//ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
 		//playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, NetObjectClass.PLAYER, new byte[1]);
 		//Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
@@ -69,5 +71,10 @@ public class Server : NetworkingEnd
 			}
 		}
 		throw new System.Exception("No network adapters with an IPv4 address in the system");
+	}
+
+	public override bool IsServer()
+	{
+		return true;
 	}
 }

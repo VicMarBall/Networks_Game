@@ -33,6 +33,8 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	protected Queue<Packet> preparedPackets = new Queue<Packet>();
 
+	public abstract bool IsServer();
+
 	protected void ReceivePacket()
 	{
 		int recv;

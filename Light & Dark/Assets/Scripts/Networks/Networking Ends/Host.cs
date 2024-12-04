@@ -8,6 +8,11 @@ using UnityEngine;
 // NOT TO USE
 public class Host : NetworkingEnd
 {
+	public override bool IsServer()
+	{
+		return true;
+	}
+
 	public void StartHost()
 	{
 		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);

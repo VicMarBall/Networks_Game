@@ -155,6 +155,7 @@ public class NetObjectsManager : MonoBehaviour
 
 	void CreateNetObject(DataToCreateNetObject dataToCreate)
 	{
+		if (!NetworkingEnd.instance.IsServer()) { return; }
 		switch (dataToCreate.netClass)
 		{
 			case NetObjectClass.PLAYER:
@@ -243,6 +244,27 @@ public class NetObjectsManager : MonoBehaviour
 	void DestroyNetObject(DataToDestroyNetObject dataToDestroy)
 	{
 
+	}
+
+	ObjectStateSegment GetSegmentToRecreateNetObjectsDictionary(int netID)
+	{
+		ObjectStateSegment segment = new ObjectStateSegment(ObjectReplicationAction.RECREATE, netObjects[netID].GetDataToRecreate().Serialize());
+
+		return segment;
+	}
+
+	public Packet GetNetObjectsPacket()
+	{
+		ObjectStatePacketBody body = new ObjectStatePacketBody();
+
+		foreach (var key in netObjects.Keys)
+		{
+			body.AddSegment(GetSegmentToRecreateNetObjectsDictionary(key));
+		}
+
+		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body);
+
+		return packet;
 	}
 
 	//public void SendNetObjectsToAllUsers()
