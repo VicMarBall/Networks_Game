@@ -77,6 +77,10 @@ public class NetPlayer : NetObject
 	void Awake()
 	{
         netClass = NetObjectClass.PLAYER;
+		
+		previousPosition = nextPosition = netPositionTarget.position;
+		previousRotation = nextRotation = netRotationTarget.rotation;
+		previousScale = nextScale = netScaleTarget.localScale;
 	}
 
 	void Update()
