@@ -15,6 +15,9 @@ public class Server : NetworkingEnd
 
 		Debug.Log("Server Started");
 
+		// TO-MOVE
+		GameManager.instance.SetEnvironmentView(GameplayEnvironmentMode.DARK);
+
 		Thread newConnection = new Thread(ReceivePacket);
 		newConnection.Start();
 	}

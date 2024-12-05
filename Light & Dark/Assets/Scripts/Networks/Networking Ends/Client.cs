@@ -33,6 +33,9 @@ public class Client : NetworkingEnd
 
 		Debug.Log("Client Created");
 
+		// TO-MOVE
+		GameManager.instance.SetEnvironmentView(GameplayEnvironmentMode.LIGHT);
+
 		Thread mainThread = new Thread(ConnectToServer);
 		mainThread.Start();
 	}

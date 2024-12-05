@@ -29,5 +29,10 @@ public class GameManager : MonoBehaviour
 
 	public bool isInsideLevel = false;
 
+	public void SetEnvironmentView(GameplayEnvironmentMode mode)
+	{
+		gameplayEnvironmentMode = mode;
+	}
+
 	public GameplayEnvironmentMode gameplayEnvironmentMode { get; private set; }
 }
