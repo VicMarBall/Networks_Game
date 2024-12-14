@@ -1421,7 +1421,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!1 &400412366
 GameObject:
@@ -1656,7 +1656,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!65 &401333044
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2593,7 +2593,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!65 &547805099
 BoxCollider:
@@ -2715,7 +2715,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!65 &548756379
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2991,7 +2991,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!1 &575741153
 GameObject:
   m_ObjectHideFlags: 0
@@ -3112,7 +3112,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!1 &579268299
 GameObject:
   m_ObjectHideFlags: 0
@@ -3212,7 +3212,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!65 &579268305
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3466,7 +3466,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!65 &625250549
 BoxCollider:
@@ -3708,7 +3708,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!65 &671345990
 BoxCollider:
@@ -3829,7 +3829,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!65 &675248317
 BoxCollider:
@@ -4139,7 +4139,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!1 &691301949
 GameObject:
   m_ObjectHideFlags: 0
@@ -4278,7 +4278,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!65 &700564301
 BoxCollider:
@@ -4541,7 +4541,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!1 &800740903
 GameObject:
@@ -4734,7 +4734,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!1 &804621919
 GameObject:
@@ -4835,7 +4835,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!65 &804621925
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4955,7 +4955,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!65 &806877557
 BoxCollider:
@@ -5576,7 +5576,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   environmentMode: 0
-  lightMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  lightMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
   darkMaterial: {fileID: 2100000, guid: bb17bfe1af4794545a591ab1fe2176ae, type: 2}
 --- !u!1 &967889264
 GameObject:
@@ -5698,7 +5698,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!1 &989239470
 GameObject:
   m_ObjectHideFlags: 0
@@ -5940,7 +5940,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!1 &1012305070
 GameObject:
   m_ObjectHideFlags: 0
@@ -6101,7 +6101,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!65 &1038527623
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7157,7 +7157,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: e08983d36f8f8ba4b844f3d531e88198, type: 2}
-  darkMaterial: {fileID: 2100000, guid: 2e40aa417b248bf4fb7c39f84789b6e1, type: 2}
+  darkMaterial: {fileID: 2100000, guid: cc57ba7750c49ac42b4c684d8af87e68, type: 2}
 --- !u!1 &1565865476
 GameObject:
   m_ObjectHideFlags: 0
