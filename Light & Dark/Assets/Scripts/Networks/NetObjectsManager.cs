@@ -270,6 +270,22 @@ public class NetObjectsManager : MonoBehaviour
 		return packet;
 	}
 
+	public void SearchNetObjectsInScene()
+	{
+		NetObject[] netObjectsInScene = (NetObject[])FindObjectsOfType(typeof(NetObject));
+
+		foreach (var netObj in netObjectsInScene)
+		{
+			if (netObj.netID == -1)
+			{
+				netObj.netID = nextNetID;
+				netObjects.Add(netObj.netID, netObj);
+				Debug.Log("NetObject " + netObj.name + " stored with a netID of " + netObj.netID);
+				nextNetID++;
+			}
+		}
+	}
+
 	//public void SendNetObjectsToAllUsers()
 	//{
 	//	NetworkingEnd.instance.SendPacketToAllUsers(PrepareLevelReplicationPacket());

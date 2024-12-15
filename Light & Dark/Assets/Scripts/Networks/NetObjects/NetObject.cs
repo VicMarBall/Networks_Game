@@ -142,7 +142,7 @@ public struct DataToDestroyNetObject
 public abstract class NetObject : MonoBehaviour
 {
 	public int ownerID;
-	public int netID;
+	public int netID = -1;
 	public NetObjectClass netClass { get; protected set; }
 
 	public bool IsOwner() { return (ownerID == NetworkingEnd.instance.userID); }
