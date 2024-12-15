@@ -248,7 +248,8 @@ public class ObjectStatePacketBody : PacketBody
 
 public enum RequestType
 {
-	LEVEL_REPLICATION
+	LEVEL_REPLICATION,
+	CREATE_PLAYER
 }
 
 public class RequestPacketBody : PacketBody

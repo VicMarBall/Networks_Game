@@ -20,7 +20,16 @@ public class Server : NetworkingEnd
 		while (requestsRecieved.Count != 0)
 		{
 			RequestReceived request = requestsRecieved.Dequeue();
-			SendPacket(NetObjectsManager.instance.GetNetObjectsPacket(), request.endPoint);
+
+			switch (request.request.requestType)
+			{
+				case RequestType.LEVEL_REPLICATION:
+					SendPacket(NetObjectsManager.instance.GetNetObjectsPacket(), request.endPoint);
+					RequestPacketBody createPlayerRequest = new RequestPacketBody(RequestType.CREATE_PLAYER);
+					Packet createPlayerPacket = new Packet(PacketType.REQUEST, userID, createPlayerRequest);
+					SendPacket(createPlayerPacket, request.endPoint);
+					break;
+			}
 		}
 	}
 

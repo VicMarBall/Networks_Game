@@ -11,18 +11,53 @@ using UnityEngine.SceneManagement;
 
 public class Client : NetworkingEnd
 {
-	IPEndPoint targetIPEP;
-
-	private void LateUpdate()
+	struct RequestReceived
 	{
-		while (preparedPackets.Count > 0)
-		{
-			Packet packet = preparedPackets.Dequeue();
+		public RequestPacketBody request;
+		public EndPoint endPoint;
+	}
 
-			Thread sendThread = new Thread(() => SendPacket(packet, targetIPEP));
-			sendThread.Start();
+	Queue<RequestReceived> requestsRecieved = new Queue<RequestReceived>();
+
+	private void Update()
+	{
+		while (requestsRecieved.Count != 0)
+		{
+			RequestReceived request = requestsRecieved.Dequeue();
+
+			switch (request.request.requestType)
+			{
+				case RequestType.CREATE_PLAYER:
+					PlayerData playerData = new PlayerData();
+					playerData.position = new Vector3(0, 0, 0);
+					playerData.rotation = Vector3.zero;
+					playerData.scale = Vector3.one;
+
+					DataToCreateNetObject dataToCreate = new DataToCreateNetObject();
+					dataToCreate.ownerID = userID;
+					dataToCreate.netClass = NetObjectClass.PLAYER;
+					dataToCreate.objectData = playerData.Serialize();
+
+					NetObjectsManager.instance.ReceiveObjectStateToSend(-1, new ObjectStateSegment(ObjectReplicationAction.CREATE, dataToCreate.Serialize()));
+
+					break;
+			}
 		}
 	}
+
+
+	IPEndPoint targetIPEP;
+
+	//private void LateUpdate()
+	//{
+	//	while (preparedPackets.Count > 0)
+	//	{
+	//		Packet packet = preparedPackets.Dequeue();
+
+	//		Thread sendThread = new Thread(() => SendPacket(packet, targetIPEP));
+	//		sendThread.Start();
+	//	}
+	//}
 
 
 	public void StartClient(string ipTarget = "127.0.0.1")
@@ -71,23 +106,27 @@ public class Client : NetworkingEnd
 		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 	}
 
+	protected override void OnRequestPacketRecieved(Packet packet, EndPoint fromAddress)
+	{
+		RequestType requestType = ((RequestPacketBody)packet.body).requestType;
+
+		switch (requestType)
+		{
+			case RequestType.CREATE_PLAYER:
+				RequestReceived requestReceived = new RequestReceived();
+				requestReceived.request = (RequestPacketBody)packet.body;
+				requestReceived.endPoint = fromAddress;
+				requestsRecieved.Enqueue(requestReceived);
+				break;
+		}
+	}
+
+
 	public override void StartLevel(Vector3 startPoint)
 	{
-		PlayerData playerData = new PlayerData();
-		playerData.position = startPoint;
-		playerData.rotation = Vector3.zero;
-		playerData.scale = Vector3.one;
-
-		DataToCreateNetObject dataToCreate = new DataToCreateNetObject();
-		dataToCreate.ownerID = userID;
-		dataToCreate.netClass = NetObjectClass.PLAYER;
-		dataToCreate.objectData = playerData.Serialize();
-
 		RequestPacketBody body = new RequestPacketBody(RequestType.LEVEL_REPLICATION);
 		Packet requestLevelReplicationPacket = new Packet(PacketType.REQUEST, userID, body);
 		SendPacket(requestLevelReplicationPacket, targetIPEP);
-
-		NetObjectsManager.instance.ReceiveObjectStateToSend(-1, new ObjectStateSegment(ObjectReplicationAction.CREATE, dataToCreate.Serialize()));
 	}
 
 	public override bool IsServer()
