@@ -7,6 +7,23 @@ using UnityEngine;
 
 public class Server : NetworkingEnd
 {
+	struct RequestReceived
+	{
+		public RequestPacketBody request;
+		public EndPoint endPoint;
+	}
+
+	Queue<RequestReceived> requestsRecieved = new Queue<RequestReceived>();
+
+	private void Update()
+	{
+		while (requestsRecieved.Count != 0)
+		{
+			RequestReceived request = requestsRecieved.Dequeue();
+			SendPacket(NetObjectsManager.instance.GetNetObjectsPacket(), request.endPoint);
+		}
+	}
+
 	public void StartServer()
 	{
 		socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -33,8 +50,6 @@ public class Server : NetworkingEnd
 		Packet welcomePacket = new Packet(PacketType.WELCOME, userID, body);
 		SendPacket(welcomePacket, fromAddress);
 
-		SendPacket(NetObjectsManager.instance.GetNetObjectsPacket(), fromAddress);
-
 		//ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
 		//playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, NetObjectClass.PLAYER, new byte[1]);
 		//Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
@@ -45,6 +60,20 @@ public class Server : NetworkingEnd
 	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress)
 	{
 		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
+	}
+	protected override void OnRequestPacketRecieved(Packet packet, EndPoint fromAddress)
+	{
+		RequestType requestType = ((RequestPacketBody)packet.body).requestType;
+
+		switch (requestType)
+		{
+			case RequestType.LEVEL_REPLICATION:
+				RequestReceived requestReceived = new RequestReceived();
+				requestReceived.request = (RequestPacketBody)packet.body;
+				requestReceived.endPoint = fromAddress;
+				requestsRecieved.Enqueue(requestReceived);
+				break;
+		}
 	}
 
 	public override void StartLevel(Vector3 startPoint)

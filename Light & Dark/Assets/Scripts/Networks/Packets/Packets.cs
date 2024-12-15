@@ -11,7 +11,7 @@ public enum PacketType
 	WELCOME,			// server sends start information to client
 	PING,				// constant message to make sure the connection is not lost // NOT USED YET
 	OBJECT_STATE,		// sends what to do with an object
-	LEVEL_REPLICATION	// sends the name of the level + all the netObjects data to recreate
+	REQUEST				// request for other packets (mainly the world replication packet)
 }
 
 public class Packet
@@ -73,8 +73,8 @@ public class Packet
 			case PacketType.OBJECT_STATE:
 				body = new ObjectStatePacketBody(reader.ReadBytes(bodyLength));
 				break;
-			case PacketType.LEVEL_REPLICATION:
-				body = new ObjectStatePacketBody(reader.ReadBytes(bodyLength));
+			case PacketType.REQUEST:
+				body = new RequestPacketBody(reader.ReadBytes(bodyLength));
 				break;
 			default:
 				break;

@@ -78,9 +78,9 @@ abstract public class NetworkingEnd : MonoBehaviour
 				Debug.Log("Recieved OBJECT_STATE");
 				OnObjectStatePacketRecieved(packet, fromAddress);
 				break;
-			case PacketType.LEVEL_REPLICATION:
-				Debug.Log("Recieved LEVEL_REPLICATION");
-				OnLevelReplicationPacketRecieved(packet, fromAddress);
+			case PacketType.REQUEST:
+				Debug.Log("Recieved REQUEST");
+				OnRequestPacketRecieved(packet, fromAddress);
 				break;
 		}
 
@@ -97,7 +97,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 	virtual protected void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) { }
-	virtual protected void OnLevelReplicationPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnRequestPacketRecieved(Packet packet, EndPoint fromAddress) { }
 
 	protected void SendPacket(Packet packet, EndPoint target)
 	{

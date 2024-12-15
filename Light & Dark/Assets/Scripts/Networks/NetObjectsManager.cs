@@ -248,7 +248,9 @@ public class NetObjectsManager : MonoBehaviour
 
 	ObjectStateSegment GetSegmentToRecreateNetObjectsDictionary(int netID)
 	{
-		ObjectStateSegment segment = new ObjectStateSegment(ObjectReplicationAction.RECREATE, netObjects[netID].GetDataToRecreate().Serialize());
+		DataToRecreateNetObject dataNetObjects = netObjects[netID].GetDataToRecreate();
+		byte[] bytes = dataNetObjects.Serialize();
+		ObjectStateSegment segment = new ObjectStateSegment(ObjectReplicationAction.RECREATE, bytes);
 
 		return segment;
 	}
@@ -259,7 +261,8 @@ public class NetObjectsManager : MonoBehaviour
 
 		foreach (var key in netObjects.Keys)
 		{
-			body.AddSegment(GetSegmentToRecreateNetObjectsDictionary(key));
+			ObjectStateSegment segment = GetSegmentToRecreateNetObjectsDictionary(key);
+			body.AddSegment(segment);
 		}
 
 		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, body);

@@ -246,37 +246,42 @@ public class ObjectStatePacketBody : PacketBody
 
 // -----------------------------------------------------------------------------------
 
-public class LevelReplicationPacketBody : PacketBody
+public enum RequestType
+{
+	LEVEL_REPLICATION
+}
+
+public class RequestPacketBody : PacketBody
 {
 	// constructor to send
 	// constructor to recieve
-	public LevelReplicationPacketBody(string levelName, List<DataToRecreateNetObject> netObjectsData)
+	public RequestPacketBody(RequestType requestType)
 	{
-		this.levelName = levelName;
-		this.netObjectsData = netObjectsData;
+		this.requestType = requestType;
+		this.additionalData = new byte[0];
 	}
-	public LevelReplicationPacketBody(byte[] data)
+	public RequestPacketBody(RequestType requestType, byte[] additionalData)
+	{
+		this.requestType = requestType;
+		this.additionalData = additionalData;
+	}
+	public RequestPacketBody(byte[] data)
 	{
 		Deserialize(data);
 	}
 
-	public string levelName;
-	public List<DataToRecreateNetObject> netObjectsData;
+	public RequestType requestType;
+	byte[] additionalData;
 
 	public override byte[] Serialize()
 	{
 		MemoryStream stream = new MemoryStream();
 		BinaryWriter writer = new BinaryWriter(stream);
 
-		writer.Write(levelName);
+		writer.Write((int)requestType);
 
-		writer.Write(netObjectsData.Count);
-		foreach (var objectData in netObjectsData)
-		{
-			byte[] objectBytes = objectData.Serialize();
-			writer.Write(objectBytes.Length);
-			writer.Write(objectBytes);
-		}
+		writer.Write(additionalData.Length);
+		writer.Write(additionalData);
 
 		byte[] objectAsBytes = stream.ToArray();
 		stream.Close();
@@ -290,18 +295,10 @@ public class LevelReplicationPacketBody : PacketBody
 		BinaryReader reader = new BinaryReader(stream);
 		stream.Seek(0, SeekOrigin.Begin);
 
-		levelName = reader.ReadString();
+		requestType = (RequestType)reader.ReadInt32();
 
-		int nObjects = reader.ReadInt32();
-
-		for (int i = 0; i < nObjects; ++i)
-		{
-			int lengthItem = reader.ReadInt32();
-			byte[] itemData = reader.ReadBytes(lengthItem);
-			DataToRecreateNetObject item = new DataToRecreateNetObject();
-			item.Deserialize(itemData);
-			netObjectsData.Add(item);
-		}
+		int additionalDataLength = reader.ReadInt32();
+		additionalData = reader.ReadBytes(additionalDataLength);
 
 		stream.Close();
 	}

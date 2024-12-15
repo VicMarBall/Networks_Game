@@ -70,12 +70,6 @@ public class Client : NetworkingEnd
 	{
 		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
 	}
-	protected override void OnLevelReplicationPacketRecieved(Packet packet, EndPoint fromAddress)
-	{
-		LevelReplicationPacketBody levelReplication = (LevelReplicationPacketBody)packet.body;
-		SceneManager.LoadScene(levelReplication.levelName);
-		//NetObjectsManager.instance.ReplicateLevelObjects(levelReplication.netObjectsData);
-	}
 
 	public override void StartLevel(Vector3 startPoint)
 	{
@@ -88,6 +82,10 @@ public class Client : NetworkingEnd
 		dataToCreate.ownerID = userID;
 		dataToCreate.netClass = NetObjectClass.PLAYER;
 		dataToCreate.objectData = playerData.Serialize();
+
+		RequestPacketBody body = new RequestPacketBody(RequestType.LEVEL_REPLICATION);
+		Packet requestLevelReplicationPacket = new Packet(PacketType.REQUEST, userID, body);
+		SendPacket(requestLevelReplicationPacket, targetIPEP);
 
 		NetObjectsManager.instance.ReceiveObjectStateToSend(-1, new ObjectStateSegment(ObjectReplicationAction.CREATE, dataToCreate.Serialize()));
 	}

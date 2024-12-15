@@ -128,7 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c0eb333a7a4b8348ae6db0ddf9421ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerID: 0
+  ownerID: -1
   netID: 0
   netPositionTarget: {fileID: 8095315925042266574}
   netRotationTarget: {fileID: 8095315925042266574}
