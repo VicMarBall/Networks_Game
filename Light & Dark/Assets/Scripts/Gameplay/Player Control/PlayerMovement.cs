@@ -157,4 +157,10 @@ public class PlayerMovement : MonoBehaviour
 	{
 		readyToJump = true;
 	}
+
+	public void die()
+    {
+		transform.position = new Vector3(0,0,0);
+    }
+
 }
