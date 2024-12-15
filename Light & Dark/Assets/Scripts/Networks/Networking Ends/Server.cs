@@ -58,11 +58,6 @@ public class Server : NetworkingEnd
 		WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
 		Packet welcomePacket = new Packet(PacketType.WELCOME, userID, body);
 		SendPacket(welcomePacket, fromAddress);
-
-		//ObjectStatePacketBody playerBodyPacket = new ObjectStatePacketBody();
-		//playerBodyPacket.AddSegment(ObjectReplicationAction.RECREATE, userID, NetObjectClass.PLAYER, new byte[1]);
-		//Packet playerPacket = new Packet(PacketType.OBJECT_STATE, userID, playerBodyPacket);
-		//SendPacket(playerPacket, fromAddress);
 	}
 	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }

@@ -86,31 +86,19 @@ public class NetObjectsManager : MonoBehaviour
 
 	void SendObjectStatePacket()
 	{
-		//int MTU = 1000;
-
 		ObjectStatePacketBody packetBody = new ObjectStatePacketBody();
 
 		bool hasPacket = false;
 
-		//int packetSize = 0;
 		foreach (var objectState in objectStatesToSend.Values)
 		{
 			packetBody.AddSegment(objectState);
 			hasPacket = true;
 		}
 		objectStatesToSend.Clear();
-		//while (preparedObjectStateSegmentsToSend.Count > 0)
-		//{
-		//	ObjectStateSegment segmentToAdd = preparedObjectStateSegmentsToSend.Dequeue();
-		//	packetSize += segmentToAdd.dataToAction.Length + 32;
-		//	if (packetSize > MTU) 
-		//	{	
-		//		preparedObjectStateSegmentsToSend.Enqueue(segmentToAdd);
-		//		break;
-		//	}
 
-		//	packetBody.AddSegment(segmentToAdd);
-		//}
+		// TO CREATE FUNCTION TO FIT THEM CORRECTLY
+
 		if (!hasPacket) { return; }
 		Packet packet = new Packet(PacketType.OBJECT_STATE, NetworkingEnd.instance.userID, packetBody);
 
@@ -285,37 +273,4 @@ public class NetObjectsManager : MonoBehaviour
 			}
 		}
 	}
-
-	//public void SendNetObjectsToAllUsers()
-	//{
-	//	NetworkingEnd.instance.SendPacketToAllUsers(PrepareLevelReplicationPacket());
-	//}
-
-	//Packet PrepareLevelReplicationPacket()
-	//{
-	//	string levelName = SceneManager.GetActiveScene().name;
-
-	//	List<DataToRecreateNetObject> netObjetsToSend = new List<DataToRecreateNetObject>();
-
-	//	foreach (var netObject in netObjects)
-	//	{
-	//		DataToRecreateNetObject dataToRecreate = netObject.Value.GetDataToRecreate();
-
-	//		netObjetsToSend.Add(dataToRecreate);
-	//	}
-
-	//	LevelReplicationPacketBody body = new LevelReplicationPacketBody(levelName, netObjetsToSend);
-
-	//	Packet packet = new Packet(PacketType.LEVEL_REPLICATION, NetworkingEnd.instance.userID, body);
-
-	//	return packet;
-	//}
-
-	//public void ReplicateLevelObjects(List<DataToRecreateNetObject> objectsToRecreate)
-	//{
-	//	foreach (var objToRecreate in objectsToRecreate)
-	//	{
-	//		RecreateNetObject(objToRecreate.netID, objToRecreate.netClass, objToRecreate.data);
-	//	}
-	//}
 }

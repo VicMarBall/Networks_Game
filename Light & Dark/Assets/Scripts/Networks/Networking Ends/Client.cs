@@ -11,6 +11,8 @@ using UnityEngine.SceneManagement;
 
 public class Client : NetworkingEnd
 {
+	IPEndPoint targetIPEP;
+
 	struct RequestReceived
 	{
 		public RequestPacketBody request;
@@ -44,21 +46,6 @@ public class Client : NetworkingEnd
 			}
 		}
 	}
-
-
-	IPEndPoint targetIPEP;
-
-	//private void LateUpdate()
-	//{
-	//	while (preparedPackets.Count > 0)
-	//	{
-	//		Packet packet = preparedPackets.Dequeue();
-
-	//		Thread sendThread = new Thread(() => SendPacket(packet, targetIPEP));
-	//		sendThread.Start();
-	//	}
-	//}
-
 
 	public void StartClient(string ipTarget = "127.0.0.1")
 	{

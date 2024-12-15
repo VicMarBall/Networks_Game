@@ -18,7 +18,7 @@ public class MovingPlatform : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Vector3.Distance(transform.position, points[i].position) < 0.02f)
+        if (Vector3.Distance(transform.position, points[i].position) < 0.02f)
         {
             i++;
             if (i == points.Length)
