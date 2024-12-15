@@ -33,6 +33,7 @@ public class LevelStarter : MonoBehaviour
 		Debug.Log("Start");
 		GameManager.instance.isInsideLevel = true;
 		NetworkingEnd.instance.StartLevel(startPosition);
+		NetObjectsManager.instance.SearchNetObjectsInScene();
 	}
 
 	// called when the game is terminated
