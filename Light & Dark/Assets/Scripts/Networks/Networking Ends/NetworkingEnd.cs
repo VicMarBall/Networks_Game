@@ -74,6 +74,10 @@ abstract public class NetworkingEnd : MonoBehaviour
 				Debug.Log("Recieved PING");
 				OnPingPacketRecieved(packet, fromAddress);
 				break;
+			case PacketType.PONG:
+				Debug.Log("Recieved PONG");
+				OnPongPacketRecieved(packet, fromAddress);
+				break;
 			case PacketType.OBJECT_STATE:
 				Debug.Log("Recieved OBJECT_STATE");
 				OnObjectStatePacketRecieved(packet, fromAddress);
@@ -96,6 +100,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 	virtual protected void OnHelloPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnPongPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnRequestPacketRecieved(Packet packet, EndPoint fromAddress) { }
 

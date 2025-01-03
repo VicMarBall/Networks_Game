@@ -87,7 +87,13 @@ public class Client : NetworkingEnd
 		WelcomePacketBody welcome = (WelcomePacketBody)packet.body;
 		userID = welcome.newPlayerID;
 	}
-	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) 
+	{
+		PongPacketBody pong = new PongPacketBody();
+		Packet pongPacket = new Packet(PacketType.PONG, userID, pong);
+		SendPacket(pongPacket, fromAddress);
+	}
+	protected override void OnPongPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) 
 	{
 		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);

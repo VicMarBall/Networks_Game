@@ -15,6 +15,11 @@ public class Server : NetworkingEnd
 
 	Queue<RequestReceived> requestsRecieved = new Queue<RequestReceived>();
 
+	float pingIntervalTime = 1;
+	float lastPingSent = 0;
+	Dictionary<EndPoint, float> usersLastPong = new Dictionary<EndPoint, float>();
+	float maxWaitingPongTime = 10;
+
 	private void Update()
 	{
 		while (requestsRecieved.Count != 0)
@@ -31,6 +36,23 @@ public class Server : NetworkingEnd
 					break;
 			}
 		}
+
+		// ping management
+		for (int i = 0; i < usersLastPong.Count; ++i)
+		{
+			usersLastPong[usersConnected[i]] += Time.deltaTime;
+			if (usersLastPong[usersConnected[i]] > maxWaitingPongTime)
+			{
+				// manage users that don't respond
+				Debug.Log("User " + usersConnected[i] + " is not responding pings");
+			}
+		}
+
+		if (lastPingSent > pingIntervalTime)
+		{
+			SendPingToClients();
+		}
+		lastPingSent += Time.deltaTime;
 	}
 
 	public void StartServer()
@@ -53,6 +75,7 @@ public class Server : NetworkingEnd
 		if (!usersConnected.Contains(fromAddress))
 		{
 			usersConnected.Add(fromAddress);
+			usersLastPong.Add(fromAddress, 0);
 		}
 
 		WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
@@ -61,6 +84,10 @@ public class Server : NetworkingEnd
 	}
 	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	protected override void OnPongPacketRecieved(Packet packet, EndPoint fromAddress) 
+	{ 
+		usersLastPong[fromAddress] = 0;
+	}
 	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress)
 	{
 		NetObjectsManager.instance.ManageObjectStatePacket((ObjectStatePacketBody)packet.body);
@@ -112,5 +139,18 @@ public class Server : NetworkingEnd
 	public override bool IsServer()
 	{
 		return true;
+	}
+
+	void SendPingToClients()
+	{
+		PingPacketBody pingPacketBody = new PingPacketBody();
+		Packet packet = new Packet(PacketType.PING, userID, pingPacketBody);
+
+		foreach (var user in usersConnected)
+		{
+			SendPacket(packet, user);
+		}
+
+		lastPingSent = 0;
 	}
 }

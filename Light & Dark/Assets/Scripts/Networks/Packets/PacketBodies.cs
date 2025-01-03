@@ -90,7 +90,6 @@ public class WelcomePacketBody : PacketBody
 }
 
 // ---------------------------------------------------------------------------
-// NO FUNCTIONALITY
 public class PingPacketBody : PacketBody
 {
 	// constructor to send
@@ -100,6 +99,44 @@ public class PingPacketBody : PacketBody
 
 	}
 	public PingPacketBody(byte[] data)
+	{
+		Deserialize(data);
+	}
+
+	public override byte[] Serialize()
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		// 
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes;
+	}
+	public override void Deserialize(byte[] data)
+	{
+		Stream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		// 
+
+		stream.Close();
+	}
+}
+
+// ---------------------------------------------------------------------------
+public class PongPacketBody : PacketBody
+{
+	// constructor to send
+	// constructor to recieve
+	public PongPacketBody()
+	{
+
+	}
+	public PongPacketBody(byte[] data)
 	{
 		Deserialize(data);
 	}

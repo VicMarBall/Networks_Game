@@ -9,7 +9,8 @@ public enum PacketType
 {
 	HELLO,				// client enters the server
 	WELCOME,			// server sends start information to client
-	PING,				// constant message to make sure the connection is not lost // NOT USED YET
+	PING,				// constant message to make sure the connection is not lost
+	PONG,				// response to PING
 	OBJECT_STATE,		// sends what to do with an object
 	REQUEST				// request for other packets (mainly the world replication packet)
 }
@@ -69,6 +70,9 @@ public class Packet
 				break;
 			case PacketType.PING:
 				body = new PingPacketBody(reader.ReadBytes(bodyLength));
+				break;
+			case PacketType.PONG:
+				body = new PongPacketBody(reader.ReadBytes(bodyLength));
 				break;
 			case PacketType.OBJECT_STATE:
 				body = new ObjectStatePacketBody(reader.ReadBytes(bodyLength));
