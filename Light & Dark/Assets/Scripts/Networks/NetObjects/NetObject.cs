@@ -147,6 +147,7 @@ public abstract class NetObject : MonoBehaviour
 
 	public bool IsOwner() { return (ownerID == NetworkingEnd.instance.userID); }
 
+	public abstract void InitializeObjectData(byte[] dataToInitialize);
 	public abstract void UpdateObjectData(byte[] dataToUpdate);
 
 	public DataToCreateNetObject GetDataToCreate()

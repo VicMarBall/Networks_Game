@@ -108,15 +108,36 @@ public class NetPlayer : NetObject
 		else
 		{
 			#region INTERPOLATION
+
+			float normalizedTime = timeSinceLastStateChange / NetObjectsManager.instance.packetPeriod;
+
 			if (previousPosition != nextPosition)
-				netPositionTarget.position = Vector3.Lerp(previousPosition, nextPosition, timeSinceLastStateChange);
+				netPositionTarget.position = Vector3.Lerp(previousPosition, nextPosition, normalizedTime);
 
 			if (previousRotation != nextRotation)
-				netRotationTarget.rotation = Quaternion.Lerp(previousRotation, nextRotation, timeSinceLastStateChange);
+				netRotationTarget.rotation = Quaternion.Lerp(previousRotation, nextRotation, normalizedTime);
 
 			if (previousScale != nextScale)
-				netScaleTarget.localScale = Vector3.Lerp(previousScale, nextScale, timeSinceLastStateChange);
+				netScaleTarget.localScale = Vector3.Lerp(previousScale, nextScale, normalizedTime);
 			#endregion
+		}
+	}
+
+	public override void InitializeObjectData(byte[] objectDataToInitialize)
+	{
+		PlayerData playerData = new PlayerData();
+
+		playerData.Deserialize(objectDataToInitialize);
+
+		previousPosition = nextPosition = playerData.position;
+		previousRotation = nextRotation = Quaternion.Euler(playerData.rotation);
+		previousScale = nextScale = playerData.scale;
+
+		if (!IsOwner())
+		{
+			netPositionTarget.position = playerData.position;
+			netRotationTarget.rotation = Quaternion.Euler(playerData.rotation);
+			netScaleTarget.localScale = playerData.scale;
 		}
 	}
 

@@ -32,6 +32,8 @@ public class NetObjectsManager : MonoBehaviour
 	Queue<DataToUpdateNetObject> pendingToUpdate = new Queue<DataToUpdateNetObject>();
 	Queue<DataToDestroyNetObject> pendingToDestroy = new Queue<DataToDestroyNetObject>();
 
+	// 0.1f == 1/10 == 10 packets per second
+	public float packetPeriod { get; } = 0.1f;
 	float timeSinceLastSending;
 	Dictionary<int, ObjectStateSegment> objectStatesToSend = new Dictionary<int, ObjectStateSegment>();
 
@@ -69,7 +71,11 @@ public class NetObjectsManager : MonoBehaviour
 			CreateNetObject(dataToCreate);
 		}
 
-		SendObjectStatePacket();
+		if (timeSinceLastSending >= packetPeriod)
+		{
+			SendObjectStatePacket();
+			timeSinceLastSending = 0;
+		}
 	}
 
 	public void ReceiveObjectStateToSend(int netID, ObjectStateSegment segment)
@@ -169,7 +175,7 @@ public class NetObjectsManager : MonoBehaviour
 				netPlayer.netID = nextNetID;
 				nextNetID++;
 
-				netPlayer.UpdateObjectData(dataToCreate.objectData);
+				netPlayer.InitializeObjectData(dataToCreate.objectData);
 
 				netObjects.Add(netPlayer.netID, netPlayer);
 
@@ -213,7 +219,7 @@ public class NetObjectsManager : MonoBehaviour
 				netPlayer.netID = dataToRecreate.netID;
 				nextNetID = dataToRecreate.netID + 1;
 
-				netPlayer.UpdateObjectData(dataToRecreate.objectData);
+				netPlayer.InitializeObjectData(dataToRecreate.objectData);
 
 				netObjects.Add(netPlayer.netID, netPlayer);
 				break;
