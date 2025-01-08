@@ -6,6 +6,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
 	public bool getsInputs;
+	public Vector3 spawn = new Vector3(0, 0, 0);
 
 	[Header("Movement")]
 	private float movementSpeed;
@@ -160,7 +161,7 @@ public class PlayerMovement : MonoBehaviour
 
 	public void die()
     {
-		transform.position = new Vector3(0,0,0);
+		transform.position = spawn;
     }
 
 }
