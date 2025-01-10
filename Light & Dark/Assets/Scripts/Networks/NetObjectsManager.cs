@@ -237,7 +237,22 @@ public class NetObjectsManager : MonoBehaviour
 	// TO IMPLEMENT
 	void DestroyNetObject(DataToDestroyNetObject dataToDestroy)
 	{
+		if (netObjects.ContainsKey(dataToDestroy.netID))
+		{
+			GameObject GO = netObjects[dataToDestroy.netID].gameObject;
+			netObjects.Remove(dataToDestroy.netID);
+			Destroy(GO);
+		}
+	}
 
+	public void ManageDestroyNetObject(int netID)
+	{
+		DataToDestroyNetObject dataToDestroyNetObject = new DataToDestroyNetObject();
+		dataToDestroyNetObject.netID = netID;
+		ObjectStateSegment segment = new ObjectStateSegment(ObjectReplicationAction.DESTROY, dataToDestroyNetObject.Serialize());
+		ReceiveObjectStateToSend(netID, segment);
+
+		DestroyNetObject(dataToDestroyNetObject);
 	}
 
 	ObjectStateSegment GetSegmentToRecreateNetObjectsDictionary(int netID)
