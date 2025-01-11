@@ -15,9 +15,10 @@ public class Server : NetworkingEnd
 
 	Queue<RequestReceived> requestsRecieved = new Queue<RequestReceived>();
 
-	float pingIntervalTime = 1;
 	float lastPingSent = 0;
+	Dictionary<EndPoint, float> usersFirstPingToRespond = new Dictionary<EndPoint, float>();
 	Dictionary<EndPoint, float> usersLastPong = new Dictionary<EndPoint, float>();
+	Dictionary<EndPoint, float> usersLatency = new Dictionary<EndPoint, float>();
 	float maxWaitingPongTime = 10;
 
 	private void Update()
@@ -38,6 +39,11 @@ public class Server : NetworkingEnd
 		}
 
 		// ping management
+		for (int i = 0; i < usersFirstPingToRespond.Count; ++i)
+		{
+			usersFirstPingToRespond[usersConnected[i]] += Time.deltaTime;
+		}
+
 		for (int i = 0; i < usersLastPong.Count; ++i)
 		{
 			usersLastPong[usersConnected[i]] += Time.deltaTime;
@@ -75,7 +81,9 @@ public class Server : NetworkingEnd
 		if (!usersConnected.Contains(fromAddress))
 		{
 			usersConnected.Add(fromAddress);
+			usersFirstPingToRespond.Add(fromAddress, 0);
 			usersLastPong.Add(fromAddress, 0);
+			usersLatency.Add(fromAddress, 0);
 		}
 
 		WelcomePacketBody body = new WelcomePacketBody(usersConnected.Count);
@@ -85,7 +93,9 @@ public class Server : NetworkingEnd
 	protected override void OnWelcomePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	protected override void OnPongPacketRecieved(Packet packet, EndPoint fromAddress) 
-	{ 
+	{
+		usersLatency[fromAddress] = usersFirstPingToRespond[fromAddress];
+		usersFirstPingToRespond[fromAddress] = -pingIntervalTime;
 		usersLastPong[fromAddress] = 0;
 	}
 	protected override void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress)
@@ -143,11 +153,16 @@ public class Server : NetworkingEnd
 
 	void SendPingToClients()
 	{
-		PingPacketBody pingPacketBody = new PingPacketBody();
-		Packet packet = new Packet(PacketType.PING, userID, pingPacketBody);
-
 		foreach (var user in usersConnected)
 		{
+			if (usersFirstPingToRespond[user] < 0)
+			{
+				usersFirstPingToRespond[user] = 0;
+			}
+
+			PingPacketBody pingPacketBody = new PingPacketBody(usersLatency[user]);
+			Packet packet = new Packet(PacketType.PING, userID, pingPacketBody);
+
 			SendPacket(packet, user);
 		}
 

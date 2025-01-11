@@ -94,21 +94,23 @@ public class PingPacketBody : PacketBody
 {
 	// constructor to send
 	// constructor to recieve
-	public PingPacketBody()
+	public PingPacketBody(float latency)
 	{
-
+		this.latency = latency;
 	}
 	public PingPacketBody(byte[] data)
 	{
 		Deserialize(data);
 	}
 
+	public float latency;
+
 	public override byte[] Serialize()
 	{
 		MemoryStream stream = new MemoryStream();
 		BinaryWriter writer = new BinaryWriter(stream);
 
-		// 
+		writer.Write(latency);
 
 		byte[] objectAsBytes = stream.ToArray();
 		stream.Close();
@@ -121,7 +123,7 @@ public class PingPacketBody : PacketBody
 		BinaryReader reader = new BinaryReader(stream);
 		stream.Seek(0, SeekOrigin.Begin);
 
-		// 
+		latency = reader.ReadSingle();
 
 		stream.Close();
 	}

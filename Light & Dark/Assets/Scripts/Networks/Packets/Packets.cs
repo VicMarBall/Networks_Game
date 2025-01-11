@@ -12,7 +12,8 @@ public enum PacketType
 	PING,				// constant message to make sure the connection is not lost
 	PONG,				// response to PING
 	OBJECT_STATE,		// sends what to do with an object
-	REQUEST				// request for other packets (mainly the world replication packet)
+	REQUEST,			// request for other packets (mainly the world replication packet)
+	LOBBY_ACTION		// for actions inside the lobby
 }
 
 public class Packet

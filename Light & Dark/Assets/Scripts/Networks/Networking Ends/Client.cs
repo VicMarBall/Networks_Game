@@ -21,8 +21,14 @@ public class Client : NetworkingEnd
 
 	Queue<RequestReceived> requestsRecieved = new Queue<RequestReceived>();
 
+	public float latency { get; protected set; }
+	public float jitter { get; protected set; } = 0;
+	float lastPingReceived = 0;
+
 	private void Update()
 	{
+		lastPingReceived += Time.deltaTime;
+
 		while (requestsRecieved.Count != 0)
 		{
 			RequestReceived request = requestsRecieved.Dequeue();
@@ -89,6 +95,13 @@ public class Client : NetworkingEnd
 	}
 	protected override void OnPingPacketRecieved(Packet packet, EndPoint fromAddress) 
 	{
+		PingPacketBody ping = (PingPacketBody)packet.body;
+
+		jitter += (Mathf.Abs(lastPingReceived - pingIntervalTime)) * 0.5f;
+		latency = ping.latency;
+		Debug.Log("Latency " + (latency * 1000) + "ms");
+		lastPingReceived = 0;
+
 		PongPacketBody pong = new PongPacketBody();
 		Packet pongPacket = new Packet(PacketType.PONG, userID, pong);
 		SendPacket(pongPacket, fromAddress);

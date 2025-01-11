@@ -33,6 +33,8 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	protected Queue<Packet> preparedPackets = new Queue<Packet>();
 
+	protected float pingIntervalTime = 1;
+
 	public abstract bool IsServer();
 
 	protected void ReceivePacket()
