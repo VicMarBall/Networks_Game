@@ -15,7 +15,7 @@ public struct DataToCreateNetObject
 		BinaryWriter writer = new BinaryWriter(stream);
 
 		writer.Write(ownerID);
-		writer.Write((int)netClass);
+		writer.Write((char)netClass);
 		writer.Write(objectData.Length);
 		writer.Write(objectData);
 
@@ -31,7 +31,7 @@ public struct DataToCreateNetObject
 		stream.Seek(0, SeekOrigin.Begin);
 
 		ownerID = reader.ReadInt32();
-		netClass = (NetObjectClass)reader.ReadInt32();
+		netClass = (NetObjectClass)reader.ReadChar();
 		int dataLength = reader.ReadInt32();
 		objectData = reader.ReadBytes(dataLength);
 
@@ -53,7 +53,7 @@ public struct DataToRecreateNetObject
 
 		writer.Write(ownerID);
 		writer.Write(netID);
-		writer.Write((int)netClass);
+		writer.Write((char)netClass);
 		writer.Write(objectData.Length);
 		writer.Write(objectData);
 
@@ -70,7 +70,7 @@ public struct DataToRecreateNetObject
 
 		ownerID = reader.ReadInt32();
 		netID = reader.ReadInt32();
-		netClass = (NetObjectClass)reader.ReadInt32();
+		netClass = (NetObjectClass)reader.ReadChar();
 		int dataLength = reader.ReadInt32();
 		objectData = reader.ReadBytes(dataLength);
 

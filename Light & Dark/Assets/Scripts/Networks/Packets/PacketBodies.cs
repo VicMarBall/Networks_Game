@@ -192,7 +192,7 @@ public struct ObjectStateSegment
 		MemoryStream stream = new MemoryStream();
 		BinaryWriter writer = new BinaryWriter(stream);
 
-		writer.Write((int)action);
+		writer.Write((char)action);
 		// maybe we can take out this one and calculate at deserialization
 		writer.Write(dataToAction.Length);
 		writer.Write(dataToAction);
@@ -208,7 +208,7 @@ public struct ObjectStateSegment
 		BinaryReader reader = new BinaryReader(stream);
 		stream.Seek(0, SeekOrigin.Begin);
 
-		action = (ObjectReplicationAction)reader.ReadInt32();
+		action = (ObjectReplicationAction)reader.ReadChar();
 		int dataToActionLength = reader.ReadInt32();
 		dataToAction = reader.ReadBytes(dataToActionLength);
 
@@ -318,7 +318,7 @@ public class RequestPacketBody : PacketBody
 		MemoryStream stream = new MemoryStream();
 		BinaryWriter writer = new BinaryWriter(stream);
 
-		writer.Write((int)requestType);
+		writer.Write((char)requestType);
 
 		writer.Write(additionalData.Length);
 		writer.Write(additionalData);
@@ -335,7 +335,7 @@ public class RequestPacketBody : PacketBody
 		BinaryReader reader = new BinaryReader(stream);
 		stream.Seek(0, SeekOrigin.Begin);
 
-		requestType = (RequestType)reader.ReadInt32();
+		requestType = (RequestType)reader.ReadChar();
 
 		int additionalDataLength = reader.ReadInt32();
 		additionalData = reader.ReadBytes(additionalDataLength);
