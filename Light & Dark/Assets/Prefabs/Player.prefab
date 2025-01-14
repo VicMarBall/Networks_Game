@@ -77,6 +77,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   getsInputs: 0
+  spawn: {x: 0, y: 0, z: 0}
   walkingSpeed: 7
   runningSpeed: 11
   wallrunSpeed: 7
@@ -107,7 +108,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isWall:
     serializedVersion: 2
-    m_Bits: 1048576
+    m_Bits: 32768
   isGround:
     serializedVersion: 2
     m_Bits: 1048576

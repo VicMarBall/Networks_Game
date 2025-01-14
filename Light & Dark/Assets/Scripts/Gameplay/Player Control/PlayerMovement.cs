@@ -164,4 +164,14 @@ public class PlayerMovement : MonoBehaviour
 		transform.position = spawn;
     }
 
+	public void setSpawnpoit()
+    {
+		spawn = gameObject.transform.position;
+    }
+
+	public void restart()
+    {
+		spawn = new Vector3(0, 0, 0);
+    }
+
 }
