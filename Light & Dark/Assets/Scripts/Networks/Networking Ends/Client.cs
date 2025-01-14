@@ -126,6 +126,19 @@ public class Client : NetworkingEnd
 				break;
 		}
 	}
+	protected override void OnByePacketRecieved(Packet packet, EndPoint fromAddress) 
+	{
+		ByePacketBody bye = (ByePacketBody)packet.body;
+
+		if (bye.fromServer)
+		{
+			OnServerDisconnects(packet.originPlayerID);
+		}
+		else
+		{
+			OnOtherClientDisconnects(packet.originPlayerID);
+		}
+	}
 
 
 	public override void StartLevel(Vector3 startPoint)
@@ -138,5 +151,38 @@ public class Client : NetworkingEnd
 	public override bool IsServer()
 	{
 		return false;
+	}
+
+	void DisconnectFromServer()
+	{
+		ByePacketBody bye = new ByePacketBody(IsServer());
+		Packet packet = new Packet(PacketType.BYE, userID, bye);
+		SendPacketToAllUsers(packet);
+
+		try
+		{
+			socket.Shutdown(SocketShutdown.Both);
+		}
+		finally
+		{
+			socket.Close();
+		}
+	}
+
+	void OnServerDisconnects(int serverID)
+	{
+		NetObjectsManager.instance.DestroyPlayer(serverID);
+
+		usersConnected.Clear();
+	}
+
+	void OnOtherClientDisconnects(int userID)
+	{
+		NetObjectsManager.instance.DestroyPlayer(userID);
+	}
+
+	private void OnDestroy()
+	{
+		DisconnectFromServer();
 	}
 }

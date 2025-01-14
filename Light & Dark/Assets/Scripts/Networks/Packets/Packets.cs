@@ -13,7 +13,8 @@ public enum PacketType
 	PONG,				// response to PING
 	OBJECT_STATE,		// sends what to do with an object
 	REQUEST,			// request for other packets (mainly the world replication packet)
-	LOBBY_ACTION		// for actions inside the lobby
+	LOBBY_ACTION,		// for actions inside the lobby
+	BYE					// client = disconnects, server = shuts down
 }
 
 public class Packet
@@ -80,6 +81,9 @@ public class Packet
 				break;
 			case PacketType.REQUEST:
 				body = new RequestPacketBody(reader.ReadBytes(bodyLength));
+				break;
+			case PacketType.BYE:
+				body = new ByePacketBody(reader.ReadBytes(bodyLength));
 				break;
 			default:
 				break;

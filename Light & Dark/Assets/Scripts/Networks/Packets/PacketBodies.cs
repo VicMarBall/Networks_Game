@@ -343,3 +343,43 @@ public class RequestPacketBody : PacketBody
 		stream.Close();
 	}
 }
+
+// ---------------------------------------------------------------------------
+public class ByePacketBody : PacketBody
+{
+	// constructor to send
+	// constructor to recieve
+	public ByePacketBody(bool fromServer)
+	{
+		this.fromServer = fromServer;
+	}
+	public ByePacketBody(byte[] data)
+	{
+		Deserialize(data);
+	}
+
+	public bool fromServer;
+
+	public override byte[] Serialize()
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		writer.Write(fromServer); 
+
+		byte[] objectAsBytes = stream.ToArray();
+		stream.Close();
+
+		return objectAsBytes;
+	}
+	public override void Deserialize(byte[] data)
+	{
+		Stream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		fromServer = reader.ReadBoolean();
+		
+		stream.Close();
+	}
+}

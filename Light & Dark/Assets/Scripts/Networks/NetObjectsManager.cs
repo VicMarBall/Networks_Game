@@ -25,6 +25,8 @@ public class NetObjectsManager : MonoBehaviour
 
 	Dictionary<int, NetObject> netObjects = new Dictionary<int, NetObject>();
 
+	Dictionary<int, int> userIDToNetPlayerID = new Dictionary<int, int>();
+
 	int nextNetID = 0;
 
 	Queue<DataToCreateNetObject> pendingToCreate = new Queue<DataToCreateNetObject>();
@@ -186,6 +188,7 @@ public class NetObjectsManager : MonoBehaviour
 				dataToRecreate.objectData = dataToCreate.objectData;
 
 				objectStatesToSend.Add(dataToRecreate.netID, new ObjectStateSegment(ObjectReplicationAction.RECREATE, dataToRecreate.Serialize()));
+				userIDToNetPlayerID.Add(netPlayer.ownerID, netPlayer.netID);
 
 				break;
 		}
@@ -222,6 +225,8 @@ public class NetObjectsManager : MonoBehaviour
 				netPlayer.InitializeObjectData(dataToRecreate.objectData);
 
 				netObjects.Add(netPlayer.netID, netPlayer);
+				userIDToNetPlayerID.Add(netPlayer.ownerID, netPlayer.netID);
+
 				break;
 		}
 	}
@@ -234,12 +239,15 @@ public class NetObjectsManager : MonoBehaviour
 		}
 	}
 
-	// TO IMPLEMENT
 	void DestroyNetObject(DataToDestroyNetObject dataToDestroy)
 	{
 		if (netObjects.ContainsKey(dataToDestroy.netID))
 		{
 			GameObject GO = netObjects[dataToDestroy.netID].gameObject;
+			if (GO.GetComponent<NetPlayer>() != null)
+			{
+				userIDToNetPlayerID.Remove(GO.GetComponent<NetPlayer>().ownerID);
+			}
 			netObjects.Remove(dataToDestroy.netID);
 			Destroy(GO);
 		}
@@ -252,7 +260,7 @@ public class NetObjectsManager : MonoBehaviour
 		ObjectStateSegment segment = new ObjectStateSegment(ObjectReplicationAction.DESTROY, dataToDestroyNetObject.Serialize());
 		ReceiveObjectStateToSend(netID, segment);
 
-		DestroyNetObject(dataToDestroyNetObject);
+		pendingToDestroy.Enqueue(dataToDestroyNetObject);
 	}
 
 	ObjectStateSegment GetSegmentToRecreateNetObjectsDictionary(int netID)
@@ -293,5 +301,11 @@ public class NetObjectsManager : MonoBehaviour
 				nextNetID++;
 			}
 		}
+	}
+
+	public void DestroyPlayer(int userID)
+	{
+		ManageDestroyNetObject(userIDToNetPlayerID[userID]);
+		userIDToNetPlayerID.Remove(userID);
 	}
 }

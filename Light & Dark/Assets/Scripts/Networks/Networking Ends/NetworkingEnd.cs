@@ -23,6 +23,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 		}
 	}
 	#endregion
+
 	public int userID { get; protected set; }
 
 	protected Socket socket;
@@ -88,6 +89,11 @@ abstract public class NetworkingEnd : MonoBehaviour
 				Debug.Log("Recieved REQUEST");
 				OnRequestPacketRecieved(packet, fromAddress);
 				break;
+			case PacketType.BYE:
+				Debug.Log("Recieved BYE");
+				OnByePacketRecieved(packet, fromAddress);
+				break;
+
 		}
 
 		// send the message to all users EXCEPT origin
@@ -105,6 +111,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 	virtual protected void OnPongPacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnObjectStatePacketRecieved(Packet packet, EndPoint fromAddress) { }
 	virtual protected void OnRequestPacketRecieved(Packet packet, EndPoint fromAddress) { }
+	virtual protected void OnByePacketRecieved(Packet packet, EndPoint fromAddress) { }
 
 	protected void SendPacket(Packet packet, EndPoint target)
 	{

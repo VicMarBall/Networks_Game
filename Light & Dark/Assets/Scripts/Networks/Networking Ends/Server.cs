@@ -117,6 +117,11 @@ public class Server : NetworkingEnd
 		}
 	}
 
+	protected override void OnByePacketRecieved(Packet packet, EndPoint fromAddress) 
+	{
+		DisconnectUser(fromAddress, packet.originPlayerID);
+	}
+
 	public override void StartLevel(Vector3 startPoint)
 	{
 		PlayerData playerData = new PlayerData();
@@ -167,5 +172,37 @@ public class Server : NetworkingEnd
 		}
 
 		lastPingSent = 0;
+	}
+
+	void DisconnectUser(EndPoint user, int userID)
+	{
+		NetObjectsManager.instance.DestroyPlayer(userID);
+
+		usersFirstPingToRespond.Remove(user);
+		usersLastPong.Remove(user);
+		usersLatency.Remove(user);
+
+		usersConnected.Remove(user);
+	}
+
+	void ShutDownServer()
+	{
+		ByePacketBody bye = new ByePacketBody(IsServer());
+		Packet packet = new Packet(PacketType.BYE, userID, bye);
+		SendPacketToAllUsers(packet);
+
+		try
+		{
+			socket.Shutdown(SocketShutdown.Both);
+		}
+		finally
+		{
+			socket.Close();
+		}
+	}
+
+	private void OnDestroy()
+	{
+		ShutDownServer();
 	}
 }
