@@ -124,8 +124,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 	{
 		foreach (EndPoint user in usersConnected)
 		{
-			Thread sendThread = new Thread(() => SendPacket(packet, user));
-			sendThread.Start();
+			SendPacket(packet, user);
 		}
 	}
 
