@@ -25,16 +25,18 @@ abstract public class NetworkingEnd : MonoBehaviour
 	#endregion
 
 	public int userID { get; protected set; }
+	public int sentPacketCounter = 0;
+	public int receivedPacketCounter = 0;
 
 	protected Socket socket;
 
 	// client: usersConnected = server / host
 	// server / host: usersConnected = all clients
-	protected List<EndPoint> usersConnected = new List<EndPoint>();
+	public List<EndPoint> usersConnected = new List<EndPoint>(); //
 
 	protected Queue<Packet> preparedPackets = new Queue<Packet>();
 
-	protected float pingIntervalTime = 1;
+	public float pingIntervalTime = 1; //
 
 	public abstract bool IsServer();
 
@@ -59,6 +61,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 	protected void OnPacketRecieved(byte[] inputPacket, EndPoint fromAddress)
 	{
 		Debug.Log("Packet Received");
+		receivedPacketCounter++;
 
 		Packet packet = new Packet(inputPacket);
 
@@ -115,6 +118,7 @@ abstract public class NetworkingEnd : MonoBehaviour
 
 	protected void SendPacket(Packet packet, EndPoint target)
 	{
+		sentPacketCounter++;
 		Debug.Log(packet.type + " Packet Sent");
 		byte[] data = packet.Serialize();
 		socket.SendTo(data, target);

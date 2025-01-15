@@ -23,7 +23,8 @@ public class NetObjectsManager : MonoBehaviour
 
 	#endregion
 
-	Dictionary<int, NetObject> netObjects = new Dictionary<int, NetObject>();
+
+	public Dictionary<int, NetObject> netObjects = new Dictionary<int, NetObject>();
 
 	Dictionary<int, int> userIDToNetPlayerID = new Dictionary<int, int>();
 

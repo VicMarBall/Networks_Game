@@ -15,11 +15,11 @@ public class Server : NetworkingEnd
 
 	Queue<RequestReceived> requestsRecieved = new Queue<RequestReceived>();
 
-	float lastPingSent = 0;
+	public float lastPingSent = 0;
 	Dictionary<EndPoint, float> usersFirstPingToRespond = new Dictionary<EndPoint, float>();
-	Dictionary<EndPoint, float> usersLastPong = new Dictionary<EndPoint, float>();
+	public Dictionary<EndPoint, float> usersLastPong = new Dictionary<EndPoint, float>();
 	Dictionary<EndPoint, float> usersLatency = new Dictionary<EndPoint, float>();
-	float maxWaitingPongTime = 10;
+	public float maxWaitingPongTime = 10;
 
 	private void Update()
 	{
