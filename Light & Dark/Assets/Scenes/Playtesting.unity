@@ -1360,6 +1360,50 @@ MonoBehaviour:
   environmentMode: 0
   lightMaterial: {fileID: 2100000, guid: 979ea16aa75ba1748b3adc229c0b5239, type: 2}
   darkMaterial: {fileID: 2100000, guid: 7864b072affeb6642969a232cf6e1052, type: 2}
+--- !u!1 &524920881
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 524920883}
+  - component: {fileID: 524920882}
+  m_Layer: 0
+  m_Name: Quit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &524920882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524920881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5027c7caadfae1f4684b97eb572dee2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &524920883
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524920881}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 28.742804, y: 184.67722, z: 70.82819}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &547805093
 GameObject:
   m_ObjectHideFlags: 0
@@ -5116,7 +5160,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1090427629}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 524920882}
+        m_TargetAssemblyTypeName: Disconnect, Assembly-CSharp
+        m_MethodName: closeGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1090427629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6202,10 +6258,6 @@ MonoBehaviour:
   NetworkedObjects: {fileID: 1065250788}
   PingInterval: {fileID: 2025665646}
   DisconnectionTimeout: {fileID: 888161398}
-  ClientAdress: {fileID: 0}
-  ClientPort: {fileID: 0}
-  ClientLastPacket: {fileID: 0}
-  ClientSinceReply: {fileID: 0}
 --- !u!1 &1776108315
 GameObject:
   m_ObjectHideFlags: 0
@@ -6990,3 +7042,4 @@ SceneRoots:
   - {fileID: 199657873}
   - {fileID: 1320762525}
   - {fileID: 1774052859}
+  - {fileID: 524920883}

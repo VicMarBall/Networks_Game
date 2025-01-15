@@ -11,10 +11,6 @@ public class InfoUI : MonoBehaviour
 
     public TMP_Text PingInterval;//
     public TMP_Text DisconnectionTimeout;//
-    public TMP_Text ClientAdress;//
-    public TMP_Text ClientPort;//
-    public TMP_Text ClientLastPacket; //no
-    public TMP_Text ClientSinceReply;//
 
 
     // Start is called before the first frame update
@@ -34,9 +30,6 @@ public class InfoUI : MonoBehaviour
         {
             PingInterval.SetText(NetworkingEnd.instance.pingIntervalTime.ToString());
             DisconnectionTimeout.SetText(((Server)(NetworkingEnd.instance)).maxWaitingPongTime.ToString());
-            //ClientAdress.SetText(((Server)(NetworkingEnd.instance)).userID.);
-            //ClientPort.SetText();
-            ClientSinceReply.SetText(((Server)(NetworkingEnd.instance)).usersLastPong.Values.ToString());
         }
     }
 }
